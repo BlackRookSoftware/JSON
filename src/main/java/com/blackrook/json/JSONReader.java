@@ -263,7 +263,7 @@ public class JSONReader
 				
 				if (!matchType(JSONLexerKernel.TYPE_RBRACK))
 				{
-					errors.add("Expected ']'");
+					errors.add(getTokenInfoLine("Expected ']'"));
 					return false;
 				}
 				
@@ -278,14 +278,14 @@ public class JSONReader
 				
 				if (!matchType(JSONLexerKernel.TYPE_RBRACE))
 				{
-					errors.add("Expected '}'");
+					errors.add(getTokenInfoLine("Expected '}'"));
 					return false;
 				}
 				
 				return true;
 			}
 			
-			errors.add("Expected value.");
+			errors.add(getTokenInfoLine("Expected value."));
 			return false;
 		}
 		
@@ -341,7 +341,7 @@ public class JSONReader
 				
 				if (!matchType(JSONLexerKernel.TYPE_COLON))
 				{
-					errors.add("Expected ':'");
+					errors.add(getTokenInfoLine("Expected ':'"));
 					return false;
 				}
 				
@@ -370,7 +370,7 @@ public class JSONReader
 				
 				if (!currentType(JSONLexerKernel.TYPE_STRING, JSONLexerKernel.TYPE_IDENTIFIER))
 				{
-					errors.add("Expected member name (string or identifier).");
+					errors.add(getTokenInfoLine("Expected member name (string or identifier)."));
 					return false;
 				}
 
@@ -379,7 +379,7 @@ public class JSONReader
 				
 				if (!matchType(JSONLexerKernel.TYPE_COLON))
 				{
-					errors.add("Expected ':'");
+					errors.add(getTokenInfoLine("Expected ':'"));
 					return false;
 				}
 				
@@ -410,7 +410,7 @@ public class JSONReader
 				try {
 					currentObject.push(JSONObject.create(Long.parseLong(lng, 16)));
 				} catch (NumberFormatException n) {
-					errors.add("Malformed number.");
+					errors.add(getTokenInfoLine("Malformed number."));
 					return false;
 				}
 			}
@@ -421,7 +421,7 @@ public class JSONReader
 				try {
 					currentObject.push(JSONObject.create(Double.parseDouble(num) * Math.pow(10, Double.parseDouble(exp))));
 				} catch (NumberFormatException n) {
-					errors.add("Malformed number.");
+					errors.add(getTokenInfoLine("Malformed number."));
 					return false;
 				}
 			}
@@ -430,7 +430,7 @@ public class JSONReader
 				try {
 					currentObject.push(JSONObject.create(Double.parseDouble(s.toString())));
 				} catch (NumberFormatException n) {
-					errors.add("Malformed number.");
+					errors.add(getTokenInfoLine("Malformed number."));
 					return false;
 				}
 			}
@@ -439,7 +439,7 @@ public class JSONReader
 				try {
 					currentObject.push(JSONObject.create(Long.parseLong(s.toString())));
 				} catch (NumberFormatException n) {
-					errors.add("Malformed number.");
+					errors.add(getTokenInfoLine("Malformed number."));
 					return false;
 				}
 			}
