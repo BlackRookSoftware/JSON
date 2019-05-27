@@ -30,7 +30,7 @@ import java.util.Set;
  * <p>
  * Other implementations of this class may manipulate the stack as well (such as ones that do in-language stream inclusion).
  * <p>
- * If the system property <code>com.blackrook.base.Lexer.debug</code> is set to <code>true</code>, this does debugging output to {@link System#out}.
+ * If the system property <code>com.blackrook.json.util.Lexer.debug</code> is set to <code>true</code>, this does debugging output to {@link System#out}.
  * <p>
  * Lexer functions are NOT thread-safe.
  * @author Matthew Tropiano
@@ -1336,7 +1336,10 @@ public class Lexer
 			lineNumber++;
 			while (processLine(line = readerStack.readLine()))
 				lineNumber++;
-			currentLine = line + '\n';
+			if (line != null)
+				currentLine = line + '\n';
+			else 
+				currentLine = null;
 			charNumber = 0;
 		}
 	
