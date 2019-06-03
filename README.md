@@ -15,10 +15,18 @@ NONE
 
 This library contains classes for converting Objects to and from JavaScript Object Notation.
 
+### Why?
+
+Search me, man - it seems like everybody and their cousin made one of these. At least I can
+control the size and scope of *this* one.
+
+
 ### Library
 
 Contained in this release is a series of classes that perform JSON conversions. 
 The javadocs contain basic outlines of each package's contents.
+
+
 
 ### Compiling with Ant
 
