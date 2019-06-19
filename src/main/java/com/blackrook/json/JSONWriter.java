@@ -123,6 +123,7 @@ public final class JSONWriter
 		
 		/**
 		 * Starts the write.
+		 * @throws IOException if an error occurs on the write.
 		 */
 		public void startWrite() throws IOException
 		{
@@ -131,6 +132,8 @@ public final class JSONWriter
 		
 		/**
 		 * Writes an object.
+		 * @param object the object to write.
+		 * @throws IOException if an error occurs on the write.
 		 */
 		public void writeObject(JSONObject object) throws IOException
 		{
