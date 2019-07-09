@@ -229,7 +229,7 @@ public final class JSONWriter
 	    				break;
 	    			default:
 	    				if (c[i] < 0x0020 || c[i] >= 0x7f)
-	    					out.append("\\u"+String.format("%04x", c[i]));
+	    					out.append("\\u"+String.format("%04x", (int)c[i]));
 	    				else
 	    					out.append(c[i]);
 	    				break;
