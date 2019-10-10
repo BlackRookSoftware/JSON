@@ -17,7 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
-import com.blackrook.json.util.Lexer;
+import com.blackrook.json.struct.Lexer;
 
 /**
  * A class for reading JSON data into {@link JSONObject}s. 

@@ -25,7 +25,7 @@
 	<property name="project.javadoc.packages" value="
 		com.blackrook.json,
 		com.blackrook.json.annotation,
-		com.blackrook.json.util
+		com.blackrook.json.struct
 		"
 	/>
 	

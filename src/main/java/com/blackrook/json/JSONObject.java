@@ -20,12 +20,12 @@ import java.util.Map;
 import com.blackrook.json.annotation.JSONIgnore;
 import com.blackrook.json.annotation.JSONName;
 import com.blackrook.json.annotation.JSONType;
-import com.blackrook.json.util.TypeProfileFactory;
-import com.blackrook.json.util.TypeProfileFactory.Profile;
-import com.blackrook.json.util.TypeProfileFactory.Profile.FieldInfo;
-import com.blackrook.json.util.TypeProfileFactory.Profile.MethodInfo;
-import com.blackrook.json.util.TypeProfileFactory.MemberPolicy;
-import com.blackrook.json.util.Utils;
+import com.blackrook.json.struct.TypeProfileFactory;
+import com.blackrook.json.struct.Utils;
+import com.blackrook.json.struct.TypeProfileFactory.MemberPolicy;
+import com.blackrook.json.struct.TypeProfileFactory.Profile;
+import com.blackrook.json.struct.TypeProfileFactory.Profile.FieldInfo;
+import com.blackrook.json.struct.TypeProfileFactory.Profile.MethodInfo;
 
 /**
  * JSON Object abstraction.

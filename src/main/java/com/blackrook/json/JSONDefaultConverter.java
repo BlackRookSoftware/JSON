@@ -12,10 +12,10 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.blackrook.json.util.TypeProfileFactory.Profile;
-import com.blackrook.json.util.TypeProfileFactory.Profile.FieldInfo;
-import com.blackrook.json.util.TypeProfileFactory.Profile.MethodInfo;
-import com.blackrook.json.util.Utils;
+import com.blackrook.json.struct.Utils;
+import com.blackrook.json.struct.TypeProfileFactory.Profile;
+import com.blackrook.json.struct.TypeProfileFactory.Profile.FieldInfo;
+import com.blackrook.json.struct.TypeProfileFactory.Profile.MethodInfo;
 
 /**
  * Default converter for all types of objects that are not
