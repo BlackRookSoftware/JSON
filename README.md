@@ -3,6 +3,8 @@
 Copyright (c) 2019 Black Rook Software. All rights reserved.  
 [https://github.com/BlackRookSoftware/JSON](https://github.com/BlackRookSoftware/JSON)
 
+[Latest Release](https://github.com/BlackRookSoftware/JSON/releases/latest)
+
 ### Required Libraries
 
 NONE
