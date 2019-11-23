@@ -1010,8 +1010,16 @@ public class JSONObject
 				// Arrays.
 				if (jsonObject.isArray())
 				{
+					// Target is Iterable.
+					if (type == Iterable.class)
+					{
+						Collection<K> coll = new ArrayList<K>(jsonObject.length);
+						for (int i = 0; i < jsonObject.length; i++)
+							coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+						return type.cast(coll);
+					}
 					// Target is Collection.
-					if (Collection.class.isAssignableFrom(type))
+					else if (Collection.class.isAssignableFrom(type))
 					{
 						Object out;
 						// Not instantiate-able.

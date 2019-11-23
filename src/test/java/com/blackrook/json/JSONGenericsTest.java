@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
-import java.util.AbstractSet;
+import java.util.Collection;
 
 import com.blackrook.json.annotation.JSONCollectionType;
 import com.blackrook.json.annotation.JSONMapType;
@@ -57,7 +57,7 @@ public final class JSONGenericsTest
 	public static class Pair
 	{
 		@JSONCollectionType(String.class)
-		public AbstractSet<String> setjunk;
+		public Collection<String> setjunk;
 		
 		@JSONMapType(keyType = String.class, valueType = Integer.class)
 		public AbstractMap<String, Integer> fields;

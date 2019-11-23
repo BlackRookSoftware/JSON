@@ -276,6 +276,14 @@ public class TypeProfileFactory
 						else
 							mapKeyType = JSONObject.class;
 					}
+					else if (type == Iterable.class)
+					{
+						JSONCollectionType anno = f.getAnnotation(JSONCollectionType.class);
+						if (anno != null)
+							mapKeyType = anno.value();
+						else
+							mapKeyType = JSONObject.class;
+					}
 					
 					FieldInfo fi = new FieldInfo(type, f, alias, mapKeyType, mapValueType);
 					publicFieldsByName.put(f.getName(), fi);

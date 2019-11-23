@@ -19,6 +19,7 @@ import com.blackrook.json.JSONObject;
  *     <li><b>Map&lt;K, V&gt;</b> - HashMap</li>
  * </ul>
  * If not a map, a {@link JSONConversionException} will occur.
+ * @since [NOW]
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
