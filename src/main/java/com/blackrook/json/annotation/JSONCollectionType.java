@@ -22,7 +22,7 @@ import com.blackrook.json.JSONObject;
  *     <li><b>Collection&lt;T&gt;</b> - ArrayList&lt;T&gt;</li>
  * </ul>
  * If not a Collection, a {@link JSONConversionException} will occur.
- * @since [NOW]
+ * @since 1.1.0
  */
 @Target({ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)

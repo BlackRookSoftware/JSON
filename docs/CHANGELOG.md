@@ -3,7 +3,7 @@ JSON (C) Black Rook Software 2019
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
-Changed in [NOW]
+Changed in 1.1.0
 ----------------
 
 - Added Generic collection hints for erased types (JSONCollectionType, JSONMapType).
