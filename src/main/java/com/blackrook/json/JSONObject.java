@@ -11,7 +11,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -886,6 +888,27 @@ public class JSONObject
 		return object;
 	}
 
+	private static <T> T newClassInstance(String memberName, Class<T> type)
+	{
+		try {
+			return type.getDeclaredConstructor().newInstance();
+		} catch (InstantiationException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted; no nullary constructor or type is not instantiable.", e);
+		} catch (IllegalAccessException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted; constructor is not accessible.", e);
+		} catch (ExceptionInInitializerError e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted; problem occurred during instantiation.", e);
+		} catch (SecurityException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted. Cannot access default constructor.", e);
+		} catch (IllegalArgumentException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted. Internal error.", e);
+		} catch (InvocationTargetException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted. Internal error.", e);
+		} catch (NoSuchMethodException e) {
+			throw new JSONConversionException("Member "+memberName+" cannot be converted. No default constructor.", e);
+		}
+	}
+	
 	// Creates an object for application later.
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T> T createForType(String memberName, JSONObject jsonObject, Class<T> type)
@@ -983,8 +1006,21 @@ public class JSONObject
 				// Arrays.
 				if (jsonObject.isArray())
 				{
+					// Target is Collection.
+					if (Collection.class.isAssignableFrom(type))
+					{
+						// Not instantiate-able.
+						if (type.isInterface() || (type.getModifiers() & Modifier.ABSTRACT) != 0)
+						{
+							// TODO: Finish this.
+						}
+						else
+						{
+							// TODO: Finish this.
+						}
+					}
 					// type is array
-					if (Utils.isArray(type))
+					else if (Utils.isArray(type))
 					{
 						Class<?> atype = Utils.getArrayType(type);
 						if (atype == null)
@@ -1000,28 +1036,26 @@ public class JSONObject
 						throw new JSONConversionException("Member "+memberName+" cannot be converted; member is array and target is not array typed.");
 				}
 				
-				// Objects.
-				T out = null;
-				try {
-					out = type.getDeclaredConstructor().newInstance();
-				} catch (InstantiationException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted; no nullary constructor or type is not instantiable.", e);
-				} catch (IllegalAccessException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted; constructor is not accessible.", e);
-				} catch (ExceptionInInitializerError e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted; problem occurred during instantiation.", e);
-				} catch (SecurityException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted. Cannot access default constructor.", e);
-				} catch (IllegalArgumentException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted. Internal error.", e);
-				} catch (InvocationTargetException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted. Internal error.", e);
-				} catch (NoSuchMethodException e) {
-					throw new JSONConversionException("Member "+memberName+" cannot be converted. No default constructor.", e);
+				// Target is Map.
+				if (Map.class.isAssignableFrom(type))
+				{
+					// Not instantiate-able.
+					if (type.isInterface() || (type.getModifiers() & Modifier.ABSTRACT) != 0)
+					{
+						// TODO: Finish this.
+					}
+					else
+					{
+						// TODO: Finish this.
+					}
 				}
-				// whoa. recursive-ish!
-				jsonObject.applyToObject(out);
-				return out;
+				// Objects.
+				else
+				{
+					T out = newClassInstance(memberName, type);
+					jsonObject.applyToObject(out);
+					return out;
+				}
 			}
 			
 			case UNDEFINED:

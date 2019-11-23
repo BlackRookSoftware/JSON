@@ -9,7 +9,13 @@ package com.blackrook.json.struct;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
+
+import com.blackrook.json.JSONObject;
+import com.blackrook.json.annotation.JSONCollectionType;
+import com.blackrook.json.annotation.JSONMapType;
 
 /**
  * A factory that produces type profiles for POJOs and data objects.
@@ -244,7 +250,34 @@ public class TypeProfileFactory
 				if (!policy.isIgnored(f))
 				{
 					String alias = policy.getAlias(f);
-					FieldInfo fi = new FieldInfo(f.getType(), f, alias);
+					
+					Class<?> type = f.getType();
+					Class<?> mapKeyType = null;
+					Class<?> mapValueType = null;
+					if (Map.class.isAssignableFrom(type))
+					{
+						JSONMapType anno = f.getAnnotation(JSONMapType.class);
+						if (anno != null)
+						{
+							mapKeyType = anno.keyType();
+							mapValueType = anno.valueType();
+						}
+						else
+						{
+							mapKeyType = String.class;
+							mapValueType = JSONObject.class;
+						}
+					}
+					else if (Collection.class.isAssignableFrom(type))
+					{
+						JSONCollectionType anno = f.getAnnotation(JSONCollectionType.class);
+						if (anno != null)
+							mapKeyType = anno.value();
+						else
+							mapKeyType = JSONObject.class;
+					}
+					
+					FieldInfo fi = new FieldInfo(type, f, alias, mapKeyType, mapValueType);
 					publicFieldsByName.put(f.getName(), fi);
 					if (alias != null)
 						publicFieldsByAlias.put(alias, fi);
@@ -253,22 +286,78 @@ public class TypeProfileFactory
 			
 			for (Method m : inputClass.getMethods())
 			{
-				if (!policy.isIgnored(m) && isGetter(m) && !m.getName().equals("getClass"))
+				if (!policy.isIgnored(m))
 				{
-					String alias = policy.getAlias(m);
-					MethodInfo mi = new MethodInfo(m.getReturnType(), m, alias);
-					getterMethodsByName.put(getFieldName(m.getName()), mi);
-					if (alias != null)
-						getterMethodsByAlias.put(alias, mi);
+					if (isGetter(m) && !m.getName().equals("getClass"))
+					{
+						Class<?> type = m.getReturnType();
+						Class<?> mapKeyType = null;
+						Class<?> mapValueType = null;
+						if (Map.class.isAssignableFrom(type))
+						{
+							JSONMapType anno = m.getAnnotation(JSONMapType.class);
+							if (anno != null)
+							{
+								mapKeyType = anno.keyType();
+								mapValueType = anno.valueType();
+							}
+							else
+							{
+								mapKeyType = String.class;
+								mapValueType = JSONObject.class;
+							}
+						}
+						else if (Collection.class.isAssignableFrom(type))
+						{
+							JSONCollectionType anno = m.getAnnotation(JSONCollectionType.class);
+							if (anno != null)
+								mapKeyType = anno.value();
+							else
+								mapKeyType = JSONObject.class;
+						}
+											
+						String alias = policy.getAlias(m);
+						MethodInfo mi = new MethodInfo(type, m, alias, mapKeyType, mapValueType);
+						getterMethodsByName.put(getFieldName(m.getName()), mi);
+						if (alias != null)
+							getterMethodsByAlias.put(alias, mi);
+					}
+					else if (isSetter(m, inputClass))
+					{
+						Class<?> type = m.getParameterTypes()[0];
+						Class<?> mapKeyType = null;
+						Class<?> mapValueType = null;
+						if (Map.class.isAssignableFrom(type))
+						{
+							JSONMapType anno = m.getAnnotation(JSONMapType.class);
+							if (anno != null)
+							{
+								mapKeyType = anno.keyType();
+								mapValueType = anno.valueType();
+							}
+							else
+							{
+								mapKeyType = String.class;
+								mapValueType = JSONObject.class;
+							}
+						}
+						else if (Collection.class.isAssignableFrom(type))
+						{
+							JSONCollectionType anno = m.getAnnotation(JSONCollectionType.class);
+							if (anno != null)
+								mapKeyType = anno.value();
+							else
+								mapKeyType = JSONObject.class;
+						}
+											
+						String alias = policy.getAlias(m);
+						MethodInfo mi = new MethodInfo(type, m, alias, mapKeyType, mapValueType);
+						setterMethodsByName.put(getFieldName(m.getName()), mi);
+						if (alias != null)
+							setterMethodsByAlias.put(alias, mi);
+					}
 				}
-				else if (!policy.isIgnored(m) && isSetter(m, inputClass))
-				{
-					String alias = policy.getAlias(m);
-					MethodInfo mi = new MethodInfo(m.getParameterTypes()[0], m, alias);
-					setterMethodsByName.put(getFieldName(m.getName()), mi);
-					if (alias != null)
-						setterMethodsByAlias.put(alias, mi);
-				}
+				
 			}
 		}
 		
@@ -344,12 +433,18 @@ public class TypeProfileFactory
 			private Field field;
 			/** Alias, if any. */
 			private String alias;
+			/** Key or generic class. */
+			private Class<?> primaryClass;
+			/** Value class. */
+			private Class<?> valueClass;
 
-			private FieldInfo(Class<?> type, Field field, String alias)
+			private FieldInfo(Class<?> type, Field field, String alias, Class<?> primaryClass, Class<?> valueClass)
 			{
 				this.type = type;
 				this.field = field;
 				this.alias = alias;
+				this.primaryClass = primaryClass;
+				this.valueClass = valueClass;
 			}
 
 			/**
@@ -376,6 +471,38 @@ public class TypeProfileFactory
 				return alias;
 			}
 			
+			/**
+			 * @return true if this field or methods represents a map, false if not.
+			 */
+			public boolean isMap()
+			{
+				return primaryClass != null && valueClass != null;
+			}
+			
+			/**
+			 * @return the class type used for this generic collection.
+			 */
+			public Class<?> getPrimaryClass()
+			{
+				return primaryClass;
+			}
+			
+			/**
+			 * @return the class used for this generic map key.
+			 */
+			public Class<?> getKeyClass()
+			{
+				return primaryClass;
+			}
+			
+			/**
+			 * @return the class used for this generic map value.
+			 */
+			public Class<?> getValueClass()
+			{
+				return valueClass;
+			}
+			
 		}
 		
 		/**
@@ -390,12 +517,18 @@ public class TypeProfileFactory
 			private Method method;
 			/** Alias, if any. */
 			private String alias;
+			/** Key or generic class. */
+			private Class<?> primaryClass;
+			/** Value class. */
+			private Class<?> valueClass;
 
-			private MethodInfo(Class<?> type, Method method, String alias)
+			private MethodInfo(Class<?> type, Method method, String alias, Class<?> primaryClass, Class<?> valueClass)
 			{
 				this.type = type;
 				this.method = method;
 				this.alias = alias;
+				this.primaryClass = primaryClass;
+				this.valueClass = valueClass;
 			}
 
 			/**
@@ -420,6 +553,38 @@ public class TypeProfileFactory
 			public String getAlias()
 			{
 				return alias;
+			}
+			
+			/**
+			 * @return true if this field or methods represents a map, false if not.
+			 */
+			public boolean isMap()
+			{
+				return primaryClass != null && valueClass != null;
+			}
+			
+			/**
+			 * @return the class type used for this generic collection.
+			 */
+			public Class<?> getPrimaryClass()
+			{
+				return primaryClass;
+			}
+			
+			/**
+			 * @return the class used for this generic map key.
+			 */
+			public Class<?> getKeyClass()
+			{
+				return primaryClass;
+			}
+			
+			/**
+			 * @return the class used for this generic map value.
+			 */
+			public Class<?> getValueClass()
+			{
+				return valueClass;
 			}
 			
 		}
