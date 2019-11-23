@@ -25,9 +25,9 @@ import com.blackrook.json.JSONObject;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JSONMapType
 {
-	/** The Generic type for the map key. */
+	/** @return the Generic type for the map key. */
 	Class<?> keyType() default String.class;
-	/** The Generic type for the map value. */
+	/** @return the Generic type for the map value. */
 	Class<?> valueType() default JSONObject.class;
 }
  

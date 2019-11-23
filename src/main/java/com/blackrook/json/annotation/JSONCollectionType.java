@@ -28,6 +28,6 @@ import com.blackrook.json.JSONObject;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface JSONCollectionType
 {
-	/** The Generic type for the collection. */
+	/** @return the Generic type for the collection. */
 	Class<?> value() default JSONObject.class;
 }
