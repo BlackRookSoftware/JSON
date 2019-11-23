@@ -1,0 +1,12 @@
+{
+	"setjunk" : [
+		"abc", "123", "doremi"
+	],
+	"fields": {
+		"apple": 6,
+		"banana": 14,
+		"carrot": 29,
+		"durian": -3456,
+		"eggplant": 0
+	}
+}

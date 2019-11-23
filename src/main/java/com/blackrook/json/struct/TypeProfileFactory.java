@@ -315,6 +315,10 @@ public class TypeProfileFactory
 							else
 								mapKeyType = JSONObject.class;
 						}
+						else if (Utils.isArray(type))
+						{
+							mapKeyType = Utils.getArrayType(type);
+						}
 											
 						String alias = policy.getAlias(m);
 						MethodInfo mi = new MethodInfo(type, m, alias, mapKeyType, mapValueType);
@@ -348,6 +352,10 @@ public class TypeProfileFactory
 								mapKeyType = anno.value();
 							else
 								mapKeyType = JSONObject.class;
+						}
+						else if (Utils.isArray(type))
+						{
+							mapKeyType = Utils.getArrayType(type);
 						}
 											
 						String alias = policy.getAlias(m);

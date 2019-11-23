@@ -15,9 +15,13 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import com.blackrook.json.annotation.JSONIgnore;
 import com.blackrook.json.annotation.JSONName;
@@ -854,7 +858,7 @@ public class JSONObject
 			Class<?> atype = Utils.getArrayType(object);
 			int len = Math.min(length, Array.getLength(object));
 			for (int i = 0; i < len; i++)
-				Array.set(object, i, createForType(String.format("this[%d]", i), get(i), atype));
+				Array.set(object, i, createForType(String.format("this[%d]", i), get(i), atype, null, null));
 			
 			return object;
 		}
@@ -872,7 +876,7 @@ public class JSONObject
 				String alias = fieldInfo.getAlias();
 				JSONObject jsobj = get(Utils.isNull(alias, member));
 				if (!jsobj.isUndefined())
-					Utils.setFieldValue(object, fieldInfo.getField(), createForType(member, jsobj, type));
+					Utils.setFieldValue(object, fieldInfo.getField(), createForType(member, jsobj, type, fieldInfo.getKeyClass(), fieldInfo.getValueClass()));
 			}
 			else if ((setterInfo = Utils.isNull(profile.getSetterMethodsByAlias().get(member), (profile.getSetterMethodsByName().get(member)))) != null)
 			{
@@ -881,7 +885,7 @@ public class JSONObject
 				Method method = setterInfo.getMethod();
 				JSONObject jsobj = get(Utils.isNull(alias, member));
 				if (!jsobj.isUndefined())
-					Utils.invokeBlind(method, object, createForType(member, jsobj, type));
+					Utils.invokeBlind(method, object, createForType(member, jsobj, type, setterInfo.getKeyClass(), setterInfo.getValueClass()));
 			}			
 		}
 		
@@ -911,7 +915,7 @@ public class JSONObject
 	
 	// Creates an object for application later.
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static <T> T createForType(String memberName, JSONObject jsonObject, Class<T> type)
+	private static <T, K, V> T createForType(String memberName, JSONObject jsonObject, Class<T> type, Class<K> keyType, Class<V> valueType)
 	{
 		Type jsonType = jsonObject.getType();
 		
@@ -1009,45 +1013,71 @@ public class JSONObject
 					// Target is Collection.
 					if (Collection.class.isAssignableFrom(type))
 					{
+						Object out;
 						// Not instantiate-able.
 						if (type.isInterface() || (type.getModifiers() & Modifier.ABSTRACT) != 0)
 						{
-							// TODO: Finish this.
+							Collection<K> coll;
+							if (SortedSet.class.isAssignableFrom(type))
+								coll = new TreeSet<K>();
+							else if (Set.class.isAssignableFrom(type))
+								coll = new HashSet<K>(jsonObject.length);
+							else
+								coll = new ArrayList<K>(jsonObject.length);
+							
+							for (int i = 0; i < jsonObject.length; i++)
+								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+							out = coll;
 						}
 						else
 						{
-							// TODO: Finish this.
+							Collection<K> coll = (Collection<K>)newClassInstance(memberName, type);
+							for (int i = 0; i < jsonObject.length; i++)
+								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+							out = coll;
 						}
+						return type.cast(out);
 					}
 					// type is array
 					else if (Utils.isArray(type))
 					{
-						Class<?> atype = Utils.getArrayType(type);
-						if (atype == null)
-							throw new JSONConversionException("Member "+memberName+" cannot be converted; member is array and target is not array typed.");
-						
-						Object newarray = Array.newInstance(atype, jsonObject.length);
+						Object newarray = Array.newInstance(keyType, jsonObject.length);
 						for (int i = 0; i < jsonObject.length; i++)
-							Array.set(newarray, i, createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), atype));
-							
+							Array.set(newarray, i, createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
 						return type.cast(newarray);
 					}
 					else
-						throw new JSONConversionException("Member "+memberName+" cannot be converted; member is array and target is not array typed.");
+						throw new JSONConversionException("Member "+memberName+" cannot be converted; member is array and target is not array typed or a single-type Collection type.");
 				}
 				
 				// Target is Map.
 				if (Map.class.isAssignableFrom(type))
 				{
+					Object out;
 					// Not instantiate-able.
 					if (type.isInterface() || (type.getModifiers() & Modifier.ABSTRACT) != 0)
 					{
-						// TODO: Finish this.
+						String[] keys = jsonObject.getMemberNames();
+						Map<K, V> map = new HashMap<K, V>(keys.length);
+						for (String key : keys)
+							map.put(
+								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), keyType, null, null), 
+								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), valueType, null, null)
+							);
+						out = map;
 					}
 					else
 					{
-						// TODO: Finish this.
+						String[] keys = jsonObject.getMemberNames();
+						Map<K, V> map = (Map<K, V>)newClassInstance(memberName, type);
+						for (String key : keys)
+							map.put(
+								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), keyType, null, null), 
+								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), valueType, null, null)
+							);
+						out = map;
 					}
+					return type.cast(out);
 				}
 				// Objects.
 				else
