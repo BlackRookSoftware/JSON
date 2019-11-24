@@ -284,7 +284,11 @@ public class TypeProfileFactory
 						else
 							mapKeyType = JSONObject.class;
 					}
-					
+					else if (Utils.isArray(type))
+					{
+						mapKeyType = Utils.getArrayType(type);
+					}
+
 					FieldInfo fi = new FieldInfo(type, f, alias, mapKeyType, mapValueType);
 					publicFieldsByName.put(f.getName(), fi);
 					if (alias != null)
@@ -323,6 +327,14 @@ public class TypeProfileFactory
 							else
 								mapKeyType = JSONObject.class;
 						}
+						else if (type == Iterable.class)
+						{
+							JSONCollectionType anno = m.getAnnotation(JSONCollectionType.class);
+							if (anno != null)
+								mapKeyType = anno.value();
+							else
+								mapKeyType = JSONObject.class;
+						}
 						else if (Utils.isArray(type))
 						{
 							mapKeyType = Utils.getArrayType(type);
@@ -354,6 +366,14 @@ public class TypeProfileFactory
 							}
 						}
 						else if (Collection.class.isAssignableFrom(type))
+						{
+							JSONCollectionType anno = m.getAnnotation(JSONCollectionType.class);
+							if (anno != null)
+								mapKeyType = anno.value();
+							else
+								mapKeyType = JSONObject.class;
+						}
+						else if (type == Iterable.class)
 						{
 							JSONCollectionType anno = m.getAnnotation(JSONCollectionType.class);
 							if (anno != null)
