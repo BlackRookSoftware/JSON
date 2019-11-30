@@ -58,14 +58,14 @@ public final class JSONTest
 		public int y;
 		@JSONName("name")
 		public int a;
-		private int z;
+		private JSONObject z;
 		
-		public int getZ()
+		public JSONObject getZ()
 		{
 			return z;
 		}
 		
-		public void setZ(int z)
+		public void setZ(JSONObject z)
 		{
 			this.z = z;
 		}

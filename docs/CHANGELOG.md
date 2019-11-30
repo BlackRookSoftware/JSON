@@ -3,6 +3,14 @@ JSON (C) Black Rook Software 2019
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
+Changed in 1.1.2
+----------------
+
+- `Changed` JSONObject.create(T) will return the passed in object itself if that object is an instance of JSONObject.
+  This was done so that JSONObjects can be generic members of deserialized/serialized data. Discussion will need to happen if this
+  method should deep-copy the JSONObject instead. 
+
+
 Changed in 1.1.1
 ----------------
 

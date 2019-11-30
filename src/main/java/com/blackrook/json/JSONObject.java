@@ -167,6 +167,8 @@ public class JSONObject
 	{
 		if (object == null)
 			return NULL;
+		else if (object instanceof JSONObject) // TODO: maybe this should copy?
+			return (JSONObject)object;
 		else if (Utils.isArray(object))
 		{
 			int len = Array.getLength(object);
@@ -917,6 +919,11 @@ public class JSONObject
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static <T, K, V> T createForType(String memberName, JSONObject jsonObject, Class<T> type, Class<K> keyType, Class<V> valueType)
 	{
+		if (JSONObject.class.isAssignableFrom(type))
+		{
+			return (T)jsonObject;
+		}
+
 		Type jsonType = jsonObject.getType();
 		
 		switch (jsonType)
