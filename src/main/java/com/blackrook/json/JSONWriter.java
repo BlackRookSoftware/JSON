@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 
 /**
  * A class for writing JSON data to JSON representation.
@@ -18,6 +19,8 @@ import java.io.Writer;
  */
 public final class JSONWriter
 {
+	private static final Charset UTF_8 = Charset.forName("UTF-8");
+
 	/**
 	 * Writes a JSONObject out to the following output stream.
 	 * @param jsonObject the object to write.
@@ -113,12 +116,12 @@ public final class JSONWriter
 		}
 		
 		// Writes to an output stream or writer.
-		private void writeString(Object object) throws IOException
+		private void writeString(String object) throws IOException
 		{
 			if (outStream != null)
-				outStream.write(String.valueOf(object).getBytes());
+				outStream.write(object.getBytes(UTF_8));
 			if (writer != null)
-				writer.write(String.valueOf(object).toCharArray());
+				writer.append(object);
 		}
 		
 		/**
@@ -173,19 +176,19 @@ public final class JSONWriter
 			{
 				Object value = object.getValue();
 				if (value instanceof Boolean)
-					writeString(object.getBoolean());
+					writeString(String.valueOf(object.getBoolean()));
 				else if (value instanceof Byte)
-					writeString(object.getByte());
+					writeString(String.valueOf(object.getByte()));
 				else if (value instanceof Short)
-					writeString(object.getShort());
+					writeString(String.valueOf(object.getShort()));
 				else if (value instanceof Integer)
-					writeString(object.getInt());
+					writeString(String.valueOf(object.getInt()));
 				else if (value instanceof Float)
-					writeString(object.getFloat());
+					writeString(String.valueOf(object.getFloat()));
 				else if (value instanceof Long)
-					writeString(object.getLong());
+					writeString(String.valueOf(object.getLong()));
 				else if (value instanceof Double)
-					writeString(object.getDouble());
+					writeString(String.valueOf(object.getDouble()));
 				else
 				{
 					writeString("\"");
@@ -198,10 +201,11 @@ public final class JSONWriter
 		
 		private String escape(String s)
 		{
-	    	char[] c = s.toCharArray();
 	    	StringBuilder out = new StringBuilder();
-	    	for (int i = 0; i < c.length; i++)
-	    		switch (c[i])
+	    	for (int i = 0; i < s.length(); i++)
+	    	{
+	    		char c = s.charAt(i);
+	    		switch (c)
 	    		{
 					case '\0':
 						out.append("\\0");
@@ -228,12 +232,13 @@ public final class JSONWriter
 	    				out.append("\\\"");    					
 	    				break;
 	    			default:
-	    				if (c[i] < 0x0020 || c[i] >= 0x7f)
-	    					out.append("\\u"+String.format("%04x", (int)c[i]));
+	    				if (c < 0x0020 || c >= 0x7f)
+	    					out.append("\\u"+String.format("%04x", (int)c));
 	    				else
-	    					out.append(c[i]);
+	    					out.append(c);
 	    				break;
 	    		}
+	    	}
 	    	
 	    	return out.toString();
 		}

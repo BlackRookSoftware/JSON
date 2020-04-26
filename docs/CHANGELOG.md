@@ -3,6 +3,12 @@ JSON (C) Black Rook Software 2019
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
+Changed in [NOW]
+----------------
+
+- `Fixed` Reduced memory allocations in JSONWriter.
+
+
 Changed in 1.1.2
 ----------------
 
