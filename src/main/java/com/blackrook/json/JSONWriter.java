@@ -9,6 +9,7 @@ package com.blackrook.json;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
@@ -96,8 +97,8 @@ public final class JSONWriter
 	 */
 	private static class WriterContext
 	{
-		/** Outputstream. May be null. */
-		private OutputStream outStream;
+		private static final String HEXALPHABET = "0123456789ABCDEF";
+
 		/** Writer. May be null. */
 		private Writer writer;
 		/** JSON Object. */
@@ -111,17 +112,7 @@ public final class JSONWriter
 
 		public WriterContext(JSONObject object, OutputStream outStream)
 		{
-			this.object = object;
-			this.outStream = outStream;
-		}
-		
-		// Writes to an output stream or writer.
-		private void writeString(String object) throws IOException
-		{
-			if (outStream != null)
-				outStream.write(object.getBytes(UTF_8));
-			if (writer != null)
-				writer.append(object);
+			this(object, new OutputStreamWriter(outStream, UTF_8));
 		}
 		
 		/**
@@ -141,106 +132,110 @@ public final class JSONWriter
 		public void writeObject(JSONObject object) throws IOException
 		{
 			if (object.isUndefined())
-				writeString("undefined");
+				writer.append("undefined");
 			else if (object.isNull())
-				writeString("null");
+				writer.append("null");
 			else if (object.isArray())
 			{
-				writeString("[");
+				writer.append("[");
 				for (int i = 0; i < object.length(); i++)
 				{
 					writeObject(object.get(i));
 					if (i < object.length() - 1)
-						writeString(",");
+						writer.append(",");
 				}
-				writeString("]");
+				writer.append("]");
 			}
 			else if (object.isObject())
 			{
-				writeString("{");
+				writer.append("{");
 				int i = 0;
 				int len = object.getMemberCount();
 				for (String member : object.getMemberNames())
 				{
-					writeString("\"");
-					writeString(escape(member));
-					writeString("\":");
+					writer.append("\"");
+					writeEscapedString(member);
+					writer.append("\":");
 					writeObject(object.get(member));
 					if (i < len - 1)
-						writeString(",");
+						writer.append(",");
 					i++;
 				}
-				writeString("}");
+				writer.append("}");
 			}
 			else
 			{
 				Object value = object.getValue();
 				if (value instanceof Boolean)
-					writeString(String.valueOf(object.getBoolean()));
+					writer.append(String.valueOf(object.getBoolean()));
 				else if (value instanceof Byte)
-					writeString(String.valueOf(object.getByte()));
+					writer.append(String.valueOf(object.getByte()));
 				else if (value instanceof Short)
-					writeString(String.valueOf(object.getShort()));
+					writer.append(String.valueOf(object.getShort()));
 				else if (value instanceof Integer)
-					writeString(String.valueOf(object.getInt()));
+					writer.append(String.valueOf(object.getInt()));
 				else if (value instanceof Float)
-					writeString(String.valueOf(object.getFloat()));
+					writer.append(String.valueOf(object.getFloat()));
 				else if (value instanceof Long)
-					writeString(String.valueOf(object.getLong()));
+					writer.append(String.valueOf(object.getLong()));
 				else if (value instanceof Double)
-					writeString(String.valueOf(object.getDouble()));
+					writer.append(String.valueOf(object.getDouble()));
 				else
 				{
-					writeString("\"");
-					writeString(escape(object.getString()));
-					writeString("\"");
+					writer.append("\"");
+					writeEscapedString(object.getString());
+					writer.append("\"");
 				}
 			}
 				
 		}
 		
-		private String escape(String s)
+		private void writeEscapedString(String s) throws IOException
 		{
-	    	StringBuilder out = new StringBuilder();
 	    	for (int i = 0; i < s.length(); i++)
 	    	{
 	    		char c = s.charAt(i);
 	    		switch (c)
 	    		{
 					case '\0':
-						out.append("\\0");
+						writer.append("\\0");
 						break;
 	    			case '\b':
-	    				out.append("\\b");
+	    				writer.append("\\b");
 	    				break;
 	    			case '\t':
-	    				out.append("\\t");
+	    				writer.append("\\t");
 	    				break;
 	    			case '\n':
-	    				out.append("\\n");
+	    				writer.append("\\n");
 	    				break;
 	    			case '\f':
-	    				out.append("\\f");
+	    				writer.append("\\f");
 	    				break;
 	    			case '\r':
-	    				out.append("\\r");
+	    				writer.append("\\r");
 	    				break;
 	    			case '\\':
-	    				out.append("\\\\");
+	    				writer.append("\\\\");
 	    				break;
 	    			case '"':
-	    				out.append("\\\"");    					
+	    				writer.append("\\\"");    					
 	    				break;
 	    			default:
 	    				if (c < 0x0020 || c >= 0x7f)
-	    					out.append("\\u"+String.format("%04x", (int)c));
+	    				{
+	    					writer.append('\\');
+	    					writer.append('u');
+	    					writer.append(HEXALPHABET.charAt((c & 0x0f000) >> 12));
+	    					writer.append(HEXALPHABET.charAt((c & 0x00f00) >> 8));
+	    					writer.append(HEXALPHABET.charAt((c & 0x000f0) >> 4));
+	    					writer.append(HEXALPHABET.charAt(c & 0x0000f));
+	    				}
 	    				else
-	    					out.append(c);
+	    					writer.append(c);
 	    				break;
 	    		}
 	    	}
-	    	
-	    	return out.toString();
 		}
 		
 	}
