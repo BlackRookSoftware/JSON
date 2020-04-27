@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.AbstractMap;
+import java.util.Arrays;
 
 import com.blackrook.json.annotation.JSONMapType;
 
@@ -71,7 +72,7 @@ public final class JSONGenericsTest
 		@Override
 		public String toString()
 		{
-			return setjunk.toString() + ", " + fields.toString();
+			return Arrays.toString(setjunk) + ", " + fields.toString();
 		}
 	}
 }
