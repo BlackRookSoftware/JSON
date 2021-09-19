@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -300,7 +299,7 @@ public class JSONObject
 	 */
 	public String[] getMemberNames()
 	{
-		String[] out = null;
+		String[] out = EMPTY_MEMBER_LIST;
 		if (isArray())
 		{
 			out = new String[length];
@@ -309,14 +308,10 @@ public class JSONObject
 		}
 		else if (isObject())
 		{
-			out = new String[getMemberCount()];
-			Iterator<String> it = getMap().keySet().iterator();
-			int i = 0;
-			while (it.hasNext())
-				out[i++] = it.next();
+			Set<String> keys = getMap().keySet(); 
+			out = keys.toArray(new String[keys.size()]);
 		}
-		else
-			out = EMPTY_MEMBER_LIST;
+		
 		return out;
 	}
 	
