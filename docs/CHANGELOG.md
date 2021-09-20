@@ -1,5 +1,5 @@
-JSON (C) Black Rook Software 2019 
-=================================
+JSON (C) Black Rook Software 2019-2021
+======================================
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
@@ -7,6 +7,7 @@ Changed in 1.1.3
 ----------------
 
 - `Fixed` Reduced memory allocations in JSONWriter.
+- `Changed` A slight tweak to member gathering.
 
 
 Changed in 1.1.2
