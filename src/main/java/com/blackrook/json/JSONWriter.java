@@ -18,9 +18,51 @@ import java.nio.charset.Charset;
  * A class for writing JSON data to JSON representation.
  * @author Matthew Tropiano
  */
-public final class JSONWriter
+public class JSONWriter
 {
 	private static final Charset UTF_8 = Charset.forName("UTF-8");
+	private static final Options DEFAULT_OPTIONS = new Options();
+	
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @param out the output stream to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static void writeJSON(JSONObject jsonObject, Options options, OutputStream out) throws IOException
+	{
+		(new WriterContext(jsonObject, options, out)).startWrite();
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @param writer the writer to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static void writeJSON(JSONObject jsonObject, Options options, Writer writer) throws IOException
+	{
+		(new WriterContext(jsonObject, options, writer)).startWrite();
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @return the JSONObject as a JSON string. 
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static String writeJSONString(JSONObject jsonObject, Options options) throws IOException
+	{
+		StringWriter sw = new StringWriter();
+		writeJSON(jsonObject, options, sw);
+		return sw.toString();
+	}
 
 	/**
 	 * Writes a JSONObject out to the following output stream.
@@ -30,7 +72,7 @@ public final class JSONWriter
 	 */
 	public static void writeJSON(JSONObject jsonObject, OutputStream out) throws IOException
 	{
-		(new WriterContext(jsonObject, out)).startWrite();
+		writeJSON(jsonObject, DEFAULT_OPTIONS, out);
 	}
 
 	/**
@@ -41,7 +83,7 @@ public final class JSONWriter
 	 */
 	public static void writeJSON(JSONObject jsonObject, Writer writer) throws IOException
 	{
-		(new WriterContext(jsonObject, writer)).startWrite();
+		writeJSON(jsonObject, DEFAULT_OPTIONS, writer);
 	}
 
 	/**
@@ -52,8 +94,47 @@ public final class JSONWriter
 	 */
 	public static String writeJSONString(JSONObject jsonObject) throws IOException
 	{
+		return writeJSONString(jsonObject, DEFAULT_OPTIONS);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @param out the output stream to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static void writeJSON(Object object, Options options, OutputStream out) throws IOException
+	{
+		writeJSON(JSONObject.create(object), options, out);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @param writer the writer to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static void writeJSON(Object object, Options options, Writer writer) throws IOException
+	{
+		writeJSON(JSONObject.create(object), options, writer);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @param options the options to use for JSON output. 
+	 * @return the JSONObject as a JSON string. 
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public static String writeJSONString(Object object, Options options) throws IOException
+	{
 		StringWriter sw = new StringWriter();
-		writeJSON(jsonObject, sw);
+		writeJSON(JSONObject.create(object), options, sw);
 		return sw.toString();
 	}
 
@@ -92,6 +173,145 @@ public final class JSONWriter
 		return sw.toString();
 	}
 
+	/** This writer's options. */
+	private Options options;
+	
+	/**
+	 * Creates a new JSONWriter with a set of options to be used for every write.
+	 * @param options the writer options to use.
+	 * @since [NOW]
+	 */
+	public JSONWriter(Options options)
+	{
+		this.options = options;
+	}
+	
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @param out the output stream to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public void write(JSONObject jsonObject, OutputStream out) throws IOException
+	{
+		writeJSON(jsonObject, options, out);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @param writer the writer to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public void write(JSONObject jsonObject, Writer writer) throws IOException
+	{
+		writeJSON(jsonObject, options, writer);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param jsonObject the object to write.
+	 * @return the JSONObject as a JSON string. 
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public String writeString(JSONObject jsonObject) throws IOException
+	{
+		return writeJSONString(jsonObject, options);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @param out the output stream to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public void write(Object object, OutputStream out) throws IOException
+	{
+		write(JSONObject.create(object), out);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @param writer the writer to write to.
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public void write(Object object, Writer writer) throws IOException
+	{
+		write(JSONObject.create(object), writer);
+	}
+
+	/**
+	 * Writes a JSONObject out to the following output stream.
+	 * @param object the object to write.
+	 * @return the JSONObject as a JSON string. 
+	 * @throws IOException if a write error occurs.
+	 * @since [NOW]
+	 */
+	public String writeString(Object object) throws IOException
+	{
+		StringWriter sw = new StringWriter();
+		write(JSONObject.create(object), sw);
+		return sw.toString();
+	}
+
+	/**
+	 * The JSON export options to pass to the writer methods.
+	 * @since [NOW]
+	 */
+	public static class Options
+	{
+		/** Pretty-print indentation. */
+		private String indentation;
+		/** If true, null fields will be left undefined in output. */
+		private boolean nullOmitting;
+		
+		public Options()
+		{
+			this.indentation = null;
+			this.nullOmitting = false;
+		}
+		
+		/**
+		 * @return the indentation string to use for pretty-printing indentation.
+		 */
+		public String getIndentation() 
+		{
+			return indentation;
+		}
+		
+		/**
+		 * Sets the indentation string to use for pretty-printing indentation.
+		 * @param indentation the indentation string to use.
+		 */
+		public void setIndentation(String indentation) 
+		{
+			this.indentation = indentation;
+		}
+		
+		/**
+		 * @return true if this omits object type members with a null values, false if not.
+		 */
+		public boolean isOmittingNullMembers() 
+		{
+			return nullOmitting;
+		}
+		
+		/**
+		 * Sets if the writer omits null values from being exported from objects.
+		 * @param nullOmitting true if so, false if not.
+		 */
+		public void setOmittingNullMembers(boolean nullOmitting) 
+		{
+			this.nullOmitting = nullOmitting;
+		}
+	}
+	
 	/**
 	 * Writer context.
 	 */
@@ -103,91 +323,153 @@ public final class JSONWriter
 		private Writer writer;
 		/** JSON Object. */
 		private JSONObject object;
+		/** Options. */
+		private Options options;
 		
-		public WriterContext(JSONObject object, Writer writer)
+		private WriterContext(JSONObject object, Options options, Writer writer)
 		{
 			this.object = object;
 			this.writer = writer;
+			this.options = options;
 		}
 
-		public WriterContext(JSONObject object, OutputStream outStream)
+		private WriterContext(JSONObject object, Options options, OutputStream outStream)
 		{
-			this(object, new OutputStreamWriter(outStream, UTF_8));
+			this(object, options, new OutputStreamWriter(outStream, UTF_8));
 		}
 		
 		/**
 		 * Starts the write.
 		 * @throws IOException if an error occurs on the write.
 		 */
-		public void startWrite() throws IOException
+		private void startWrite() throws IOException
 		{
-			writeObject(object);
+			writeObject(object, 0);
 		}
 		
 		/**
 		 * Writes an object.
 		 * @param object the object to write.
+		 * @param indentDepth the current indentation depth.
 		 * @throws IOException if an error occurs on the write.
 		 */
-		public void writeObject(JSONObject object) throws IOException
+		private void writeObject(JSONObject object, int indentDepth) throws IOException
 		{
 			if (object.isUndefined())
 				writer.append("undefined");
 			else if (object.isNull())
 				writer.append("null");
 			else if (object.isArray())
-			{
-				writer.append("[");
-				for (int i = 0; i < object.length(); i++)
-				{
-					writeObject(object.get(i));
-					if (i < object.length() - 1)
-						writer.append(",");
-				}
-				writer.append("]");
-			}
+				writeArrayValue(object, indentDepth + 1);
 			else if (object.isObject())
+				writeObjectValue(object, indentDepth + 1);
+			else
+				writePrimitiveValue(object.getValue());
+		}
+
+		private void writeArrayValue(JSONObject object, int indentDepth) throws IOException
+		{
+			String memberIndent = indentString(options.indentation, indentDepth);
+			String endIndent = indentString(options.indentation, indentDepth - 1);
+			
+			writer.append("[");
+			if (memberIndent != null)
+				writer.append('\n');
+			
+			final int len = object.length();
+			for (int i = 0; i < len; i++)
 			{
-				writer.append("{");
-				int i = 0;
-				int len = object.getMemberCount();
-				for (String member : object.getMemberNames())
+				if (memberIndent != null)
+					writer.append(memberIndent);
+				
+				writeObject(object.get(i), indentDepth);
+				if (i < len - 1)
 				{
-					writer.append("\"");
-					writeEscapedString(member);
-					writer.append("\":");
-					writeObject(object.get(member));
-					if (i < len - 1)
-						writer.append(",");
-					i++;
+					writer.append(",");
+					if (memberIndent != null)
+						writer.append('\n');
 				}
-				writer.append("}");
+				else if (memberIndent != null)
+				{
+					writer.append('\n');
+				}
 			}
+
+			if (endIndent != null)
+				writer.append(endIndent);
+			
+			writer.append("]");
+		}
+		
+		private void writeObjectValue(JSONObject object, int indentDepth) throws IOException
+		{
+			String memberIndent = indentString(options.indentation, indentDepth);
+			String endIndent = indentString(options.indentation, indentDepth - 1);
+
+			writer.append("{");
+
+			boolean wroteOne = false;
+			for (String member : object.getMemberNames())
+			{
+				JSONObject outObj = object.get(member);
+				if (options.isOmittingNullMembers() && (outObj.isNull() || outObj.isUndefined()))
+					continue;
+
+				if (wroteOne)
+					writer.append(",");
+
+				if (memberIndent != null)
+				{
+					writer.append('\n');
+					writer.append(memberIndent);
+				}
+
+				writer.append("\"");
+				writeEscapedString(member);
+				writer.append("\":");
+				
+				if (memberIndent != null)
+					writer.append(' ');
+				
+				writeObject(outObj, indentDepth);
+				wroteOne = true;
+			}
+
+			if (wroteOne)
+			{
+				if (memberIndent != null)
+					writer.append("\n");
+
+				if (endIndent != null)
+					writer.append(endIndent);
+			}
+			
+			writer.append("}");
+		}
+		
+		private void writePrimitiveValue(Object value) throws IOException
+		{
+			
+			if (value instanceof Boolean)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Byte)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Short)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Integer)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Float)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Long)
+				writer.append(String.valueOf(value));
+			else if (value instanceof Double)
+				writer.append(String.valueOf(value));
 			else
 			{
-				Object value = object.getValue();
-				if (value instanceof Boolean)
-					writer.append(String.valueOf(object.getBoolean()));
-				else if (value instanceof Byte)
-					writer.append(String.valueOf(object.getByte()));
-				else if (value instanceof Short)
-					writer.append(String.valueOf(object.getShort()));
-				else if (value instanceof Integer)
-					writer.append(String.valueOf(object.getInt()));
-				else if (value instanceof Float)
-					writer.append(String.valueOf(object.getFloat()));
-				else if (value instanceof Long)
-					writer.append(String.valueOf(object.getLong()));
-				else if (value instanceof Double)
-					writer.append(String.valueOf(object.getDouble()));
-				else
-				{
-					writer.append("\"");
-					writeEscapedString(object.getString());
-					writer.append("\"");
-				}
+				writer.append("\"");
+				writeEscapedString(String.valueOf(value));
+				writer.append("\"");
 			}
-				
 		}
 		
 		private void writeEscapedString(String s) throws IOException
@@ -237,7 +519,17 @@ public final class JSONWriter
 	    		}
 	    	}
 		}
-		
+
+		private static String indentString(String indentation, int depth) throws IOException
+		{
+			if (indentation == null)
+				return null;
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < depth; i++)
+				sb.append(indentation);
+			return sb.toString();
+		}
+
 	}
 	
 }

@@ -82,8 +82,7 @@ public class JSONObject
 	public static final JSONObject NULL = new JSONObject(Type.OBJECT, null, NOT_ARRAY);
 	
 	/** Converter hash. */
-	private static final HashMap<Class<?>, JSONConverter<?>> 
-		REGISTERED_CONVERTERS = new HashMap<Class<?>, JSONConverter<?>>();
+	private static final HashMap<Class<?>, JSONConverter<?>> REGISTERED_CONVERTERS = new HashMap<Class<?>, JSONConverter<?>>();
 	
 	/**
 	 * JavaScript type of a JSONObject.
@@ -121,8 +120,8 @@ public class JSONObject
 		JSONConverter<E> out = null;
 		if ((out = (JSONConverter<E>)REGISTERED_CONVERTERS.get(clazz)) == null)
 		{
-			JSONType ajsonType = clazz.getAnnotation(JSONType.class);
-			if (ajsonType == null)
+			JSONType jsonType = clazz.getAnnotation(JSONType.class);
+			if (jsonType == null)
 				return null;
 			
 			synchronized (REGISTERED_CONVERTERS)
@@ -130,7 +129,7 @@ public class JSONObject
 				if ((out = (JSONConverter<E>)REGISTERED_CONVERTERS.get(clazz)) == null)
 				{
 					try {
-						out = (JSONConverter<E>)ajsonType.converter().getDeclaredConstructor().newInstance();
+						out = (JSONConverter<E>)jsonType.converter().getDeclaredConstructor().newInstance();
 						setConverter(clazz, out);
 					} catch (Throwable e) {
 						throw new RuntimeException(e);

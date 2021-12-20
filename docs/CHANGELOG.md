@@ -1,6 +1,12 @@
-JSON (C) Black Rook Software 2019-2021
-======================================
+JSON (C) Black Rook Software 
+=============================
 by Matt Tropiano et al. (see AUTHORS.txt)
+
+
+Changed in [NOW]
+----------------
+
+- `Added` Additional JSONWriter methods for output options, plus an instantiable JSONWriter.
 
 
 Changed in 1.1.3

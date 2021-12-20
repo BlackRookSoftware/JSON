@@ -20,6 +20,9 @@ public final class JSONTest
 	public static void main(String[] args) throws Exception
 	{
 		String json = getTextualContents(ClassLoader.getSystemClassLoader().getResourceAsStream("com/blackrook/json/test.json"));
+		JSONWriter.Options options = new JSONWriter.Options();
+		options.setIndentation("    ");
+		options.setOmittingNullMembers(true);
 		
 		Pair[] out = null;
 		for (int i = 0; i < 5000; i++)
@@ -32,7 +35,7 @@ public final class JSONTest
 		for (int i = 0; i < 5000; i++)
 		{
 			long t = System.nanoTime();
-			String s = JSONWriter.writeJSONString(out);
+			String s = JSONWriter.writeJSONString(out, options);
 			t = System.nanoTime() - t;
 			System.out.println(s  + (t + "ns"));
 		}		
