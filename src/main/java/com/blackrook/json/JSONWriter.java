@@ -29,7 +29,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static void writeJSON(JSONObject jsonObject, Options options, OutputStream out) throws IOException
 	{
@@ -42,7 +42,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @param writer the writer to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static void writeJSON(JSONObject jsonObject, Options options, Writer writer) throws IOException
 	{
@@ -55,7 +55,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @return the JSONObject as a JSON string. 
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static String writeJSONString(JSONObject jsonObject, Options options) throws IOException
 	{
@@ -103,7 +103,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static void writeJSON(Object object, Options options, OutputStream out) throws IOException
 	{
@@ -116,7 +116,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @param writer the writer to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static void writeJSON(Object object, Options options, Writer writer) throws IOException
 	{
@@ -129,7 +129,7 @@ public class JSONWriter
 	 * @param options the options to use for JSON output. 
 	 * @return the JSONObject as a JSON string. 
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static String writeJSONString(Object object, Options options) throws IOException
 	{
@@ -179,7 +179,7 @@ public class JSONWriter
 	/**
 	 * Creates a new JSONWriter with a set of options to be used for every write.
 	 * @param options the writer options to use.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public JSONWriter(Options options)
 	{
@@ -191,7 +191,7 @@ public class JSONWriter
 	 * @param jsonObject the object to write.
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public void write(JSONObject jsonObject, OutputStream out) throws IOException
 	{
@@ -203,7 +203,7 @@ public class JSONWriter
 	 * @param jsonObject the object to write.
 	 * @param writer the writer to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public void write(JSONObject jsonObject, Writer writer) throws IOException
 	{
@@ -215,7 +215,7 @@ public class JSONWriter
 	 * @param jsonObject the object to write.
 	 * @return the JSONObject as a JSON string. 
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public String writeString(JSONObject jsonObject) throws IOException
 	{
@@ -227,7 +227,7 @@ public class JSONWriter
 	 * @param object the object to write.
 	 * @param out the output stream to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public void write(Object object, OutputStream out) throws IOException
 	{
@@ -239,7 +239,7 @@ public class JSONWriter
 	 * @param object the object to write.
 	 * @param writer the writer to write to.
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public void write(Object object, Writer writer) throws IOException
 	{
@@ -251,7 +251,7 @@ public class JSONWriter
 	 * @param object the object to write.
 	 * @return the JSONObject as a JSON string. 
 	 * @throws IOException if a write error occurs.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public String writeString(Object object) throws IOException
 	{
@@ -262,7 +262,7 @@ public class JSONWriter
 
 	/**
 	 * The JSON export options to pass to the writer methods.
-	 * @since [NOW]
+	 * @since 1.2.0
 	 */
 	public static class Options
 	{

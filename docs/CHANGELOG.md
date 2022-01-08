@@ -3,7 +3,7 @@ JSON (C) Black Rook Software
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
-Changed in [NOW]
+Changed in 1.2.0
 ----------------
 
 - `Added` Additional JSONWriter methods for output options, plus an instantiable JSONWriter.
