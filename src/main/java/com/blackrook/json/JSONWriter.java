@@ -107,7 +107,7 @@ public class JSONWriter
 	 */
 	public static void writeJSON(Object object, Options options, OutputStream out) throws IOException
 	{
-		writeJSON(JSONObject.create(object), options, out);
+		writeJSON(JSONObject.create(object, options.converterSet), options, out);
 	}
 
 	/**
@@ -120,7 +120,7 @@ public class JSONWriter
 	 */
 	public static void writeJSON(Object object, Options options, Writer writer) throws IOException
 	{
-		writeJSON(JSONObject.create(object), options, writer);
+		writeJSON(JSONObject.create(object, options.converterSet), options, writer);
 	}
 
 	/**
@@ -134,7 +134,7 @@ public class JSONWriter
 	public static String writeJSONString(Object object, Options options) throws IOException
 	{
 		StringWriter sw = new StringWriter();
-		writeJSON(JSONObject.create(object), options, sw);
+		writeJSON(JSONObject.create(object, options.converterSet), options, sw);
 		return sw.toString();
 	}
 
@@ -146,7 +146,7 @@ public class JSONWriter
 	 */
 	public static void writeJSON(Object object, OutputStream out) throws IOException
 	{
-		writeJSON(JSONObject.create(object), out);
+		writeJSON(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), out);
 	}
 
 	/**
@@ -157,7 +157,7 @@ public class JSONWriter
 	 */
 	public static void writeJSON(Object object, Writer writer) throws IOException
 	{
-		writeJSON(JSONObject.create(object), writer);
+		writeJSON(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), writer);
 	}
 
 	/**
@@ -169,7 +169,7 @@ public class JSONWriter
 	public static String writeJSONString(Object object) throws IOException
 	{
 		StringWriter sw = new StringWriter();
-		writeJSON(JSONObject.create(object), sw);
+		writeJSON(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), sw);
 		return sw.toString();
 	}
 
@@ -231,7 +231,7 @@ public class JSONWriter
 	 */
 	public void write(Object object, OutputStream out) throws IOException
 	{
-		write(JSONObject.create(object), out);
+		write(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), out);
 	}
 
 	/**
@@ -243,7 +243,7 @@ public class JSONWriter
 	 */
 	public void write(Object object, Writer writer) throws IOException
 	{
-		write(JSONObject.create(object), writer);
+		write(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), writer);
 	}
 
 	/**
@@ -256,7 +256,7 @@ public class JSONWriter
 	public String writeString(Object object) throws IOException
 	{
 		StringWriter sw = new StringWriter();
-		write(JSONObject.create(object), sw);
+		write(JSONObject.create(object, DEFAULT_OPTIONS.converterSet), sw);
 		return sw.toString();
 	}
 
@@ -270,11 +270,14 @@ public class JSONWriter
 		private String indentation;
 		/** If true, null fields will be left undefined in output. */
 		private boolean nullOmitting;
+		/** The converter set used for object conversion. */
+		private JSONConverterSet converterSet;
 		
 		public Options()
 		{
 			this.indentation = null;
 			this.nullOmitting = false;
+			this.converterSet = JSONObject.GLOBAL_CONVERTER_SET;
 		}
 		
 		/**
@@ -310,6 +313,17 @@ public class JSONWriter
 		{
 			this.nullOmitting = nullOmitting;
 		}
+
+		/**
+		 * Replaces the underlying converter set.
+		 * @param converterSet the converter set to use.
+		 * @since [NOW]
+		 */
+		public void setConverterSet(JSONConverterSet converterSet) 
+		{
+			this.converterSet = converterSet;
+		}
+		
 	}
 	
 	/**
@@ -361,10 +375,10 @@ public class JSONWriter
 				writer.append("null");
 			else if (object.isArray())
 				writeArrayValue(object, indentDepth + 1);
-			else if (object.isObject())
-				writeObjectValue(object, indentDepth + 1);
-			else
+			else if (!object.isObject())
 				writePrimitiveValue(object.getValue());
+			else
+				writeObjectValue(object, indentDepth + 1);
 		}
 
 		private void writeArrayValue(JSONObject object, int indentDepth) throws IOException

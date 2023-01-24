@@ -26,20 +26,6 @@ import com.blackrook.json.struct.Lexer;
 public class JSONReader
 {
 	/**
-	 * Reads in a new JSONObject from an InputStream.
-	 * This does not close the stream after reading, and reads the first structure
-	 * that it finds.
-	 * @param in the input stream to read from.
-	 * @return the parsed JSONObject.
-	 * @throws IOException if the stream can't be read, or an error occurs.
-	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
-	 */
-	public static JSONObject readJSON(InputStream in) throws IOException
-	{
-		return readJSON(new InputStreamReader(in));
-	}
-
-	/**
 	 * Reads in a new JSONObject from a Reader.
 	 * This does not close the stream after reading, and reads the first structure
 	 * that it finds.
@@ -51,6 +37,20 @@ public class JSONReader
 	public static JSONObject readJSON(Reader reader) throws IOException
 	{
 		return (new ReaderContext(reader)).doRead();
+	}
+
+	/**
+	 * Reads in a new JSONObject from an InputStream.
+	 * This does not close the stream after reading, and reads the first structure
+	 * that it finds.
+	 * @param in the input stream to read from.
+	 * @return the parsed JSONObject.
+	 * @throws IOException if the stream can't be read, or an error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 */
+	public static JSONObject readJSON(InputStream in) throws IOException
+	{
+		return readJSON(new InputStreamReader(in));
 	}
 
 	/**
@@ -66,19 +66,56 @@ public class JSONReader
 	}
 
 	/**
+	 * Reads in a new object from a Reader.
+	 * This does not close the stream after reading, and reads the first structure
+	 * that it finds and returns it as a new object converted from the JSON.
+	 * @param converterSet the converter set to use for conversion of certain specific types.
+	 * @param <T> the returned class type.
+	 * @param clazz the class type to read.
+	 * @param reader the reader to read from.
+	 * @return the applied object, already converted.
+	 * @throws IOException if the stream can't be read, or a read error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since [NOW]
+	 */
+	public static <T> T readJSON(Class<T> clazz, Reader reader, JSONConverterSet converterSet) throws IOException
+	{
+		return readJSON(reader).newObject(clazz, converterSet);
+	}
+
+	/**
 	 * Reads in a new object from an InputStream.
 	 * This does not close the stream after reading, and reads the first structure
 	 * that it finds and returns it as a new object converted from the JSON.
+	 * @param converterSet the converter set to use for conversion of certain specific types.
 	 * @param <T> the returned class type.
 	 * @param clazz the class type to read.
 	 * @param in the input stream to read from.
 	 * @return the applied object, already converted.
 	 * @throws IOException if the stream can't be read, or an error occurs.
 	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since [NOW]
 	 */
-	public static <T> T readJSON(Class<T> clazz, InputStream in) throws IOException
+	public static <T> T readJSON(Class<T> clazz, InputStream in, JSONConverterSet converterSet) throws IOException
 	{
-		return readJSON(in).newObject(clazz);
+		return readJSON(in).newObject(clazz, converterSet);
+	}
+
+	/**
+	 * Reads in a new object from a string of characters and returns it as a 
+	 * new object converted from the JSON.
+	 * @param converterSet the converter set to use for conversion of certain specific types.
+	 * @param <T> the returned class type.
+	 * @param clazz the class type to read.
+	 * @param data the string to read.
+	 * @return the applied object, already converted.
+	 * @throws IOException if the string can't be read, or a read error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since [NOW]
+	 */
+	public static <T> T readJSON(Class<T> clazz, String data, JSONConverterSet converterSet) throws IOException
+	{
+		return readJSON(data).newObject(clazz, converterSet);
 	}
 
 	/**
@@ -95,6 +132,22 @@ public class JSONReader
 	public static <T> T readJSON(Class<T> clazz, Reader reader) throws IOException
 	{
 		return readJSON(reader).newObject(clazz);
+	}
+
+	/**
+	 * Reads in a new object from an InputStream.
+	 * This does not close the stream after reading, and reads the first structure
+	 * that it finds and returns it as a new object converted from the JSON.
+	 * @param <T> the returned class type.
+	 * @param clazz the class type to read.
+	 * @param in the input stream to read from.
+	 * @return the applied object, already converted.
+	 * @throws IOException if the stream can't be read, or an error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 */
+	public static <T> T readJSON(Class<T> clazz, InputStream in) throws IOException
+	{
+		return readJSON(in).newObject(clazz);
 	}
 
 	/**
@@ -175,9 +228,9 @@ public class JSONReader
 		ReaderContext(Reader reader)
 		{
 			super(new JSONLexer(reader));
-			errors = new LinkedList<String>();
-			currentMember = new Stack<String>();
-			currentObject = new Stack<JSONObject>();
+			this.errors = new LinkedList<String>();
+			this.currentMember = new Stack<String>();
+			this.currentObject = new Stack<JSONObject>();
 		}
 		
 		/**

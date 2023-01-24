@@ -7,19 +7,20 @@
  ******************************************************************************/
 package com.blackrook.json;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Iterator;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
-
-import com.blackrook.json.struct.Utils;
-import com.blackrook.json.struct.TypeProfileFactory.Profile;
-import com.blackrook.json.struct.TypeProfileFactory.Profile.FieldInfo;
-import com.blackrook.json.struct.TypeProfileFactory.Profile.MethodInfo;
+import java.util.Set;
 
 /**
  * Default converter for all types of objects that are not
- * a part of the annotated conversions.
+ * a part of the annotated conversions. The default converter is meant to cover
+ * {@link Enum} types, {@link Map} types, and other types that implement {@link Iterable}, such as
+ * {@link List}s, {@link Set}s, and other implementations of {@link Collection}.
+ * <p>
+ * This is a one-way converter - this goes from Java object to JSON, and not back. It is not
+ * recommended to use this converter directly, as this is a catch-all for common conversions
+ * without explicit structure.
  * @author Matthew Tropiano
  */
 public class JSONDefaultConverter implements JSONConverter<Object>
@@ -27,50 +28,7 @@ public class JSONDefaultConverter implements JSONConverter<Object>
 	@Override
 	public JSONObject getJSONObject(Object object)
 	{
-		if (object instanceof Enum)
-		{
-			return JSONObject.create(((Enum<?>)object).name());
-		}
-		else if (object instanceof Map<?, ?>)
-		{
-			JSONObject out = JSONObject.createEmptyObject();
-			for (Map.Entry<?, ?> entry : ((Map<?, ?>)object).entrySet())
-			{
-				String key = String.valueOf(entry.getKey());
-				out.addMember(key, entry.getValue());
-			}
-			return out;
-		}
-		else if (object instanceof Iterable<?>)
-		{
-			JSONObject out = JSONObject.createEmptyArray();
-			Iterator<?> it = ((Iterable<?>)object).iterator();
-			while (it.hasNext())
-				out.append(JSONObject.create(it.next()));
-			return out;
-		}
-		else
-		{
-			Class<?> clz = object.getClass();
-			JSONObject out = JSONObject.createEmptyObject();
-			Profile<?> profile = JSONObject.PROFILE_FACTORY.getProfile(clz);
-
-			for (Map.Entry<String, MethodInfo> getters : profile.getGetterMethodsByName().entrySet())
-			{
-				String memberName = getters.getKey();
-				String alias = getters.getValue().getAlias();
-				Method method = getters.getValue().getMethod();
-				out.addMember(Utils.isNull(alias, memberName), Utils.invokeBlind(method, object));
-			}
-			for (Map.Entry<String, FieldInfo> fields : profile.getPublicFieldsByName().entrySet())
-			{
-				String memberName = fields.getKey();
-				String alias = fields.getValue().getAlias();
-				Field field = fields.getValue().getField();
-				out.addMember(Utils.isNull(alias, memberName), Utils.getFieldValue(object, field));
-			}
-			return out;
-		}
+		return JSONObject.createFromObject(object, JSONObject.GLOBAL_CONVERTER_SET);
 	}
 
 	/** Returns null. */

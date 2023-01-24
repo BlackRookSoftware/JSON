@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +25,6 @@ import java.util.TreeSet;
 
 import com.blackrook.json.annotation.JSONIgnore;
 import com.blackrook.json.annotation.JSONName;
-import com.blackrook.json.annotation.JSONType;
 import com.blackrook.json.struct.TypeProfileFactory;
 import com.blackrook.json.struct.Utils;
 import com.blackrook.json.struct.TypeProfileFactory.MemberPolicy;
@@ -73,16 +73,17 @@ public class JSONObject
 	
 	/** Not an array. */
 	private static final int NOT_ARRAY = -1;
-	/** Default converter. */
-	private static final JSONDefaultConverter DEFAULT_CONVERTER = new JSONDefaultConverter();
-
 	/** Undefined member. All instances of UNDEFINED are this one. */
 	public static final JSONObject UNDEFINED = new JSONObject(Type.UNDEFINED, null, NOT_ARRAY);
 	/** Null member. All instances of NULL are this one. */
 	public static final JSONObject NULL = new JSONObject(Type.OBJECT, null, NOT_ARRAY);
 	
-	/** Converter hash. */
-	private static final HashMap<Class<?>, JSONConverter<?>> REGISTERED_CONVERTERS = new HashMap<Class<?>, JSONConverter<?>>();
+	/** 
+	 * Global converter set.
+	 * This is the implementation for the global fallback, a deprecated implementation of JSON conversion
+	 * in favor of supporting several different sets. 
+	 */
+	static final JSONConverterSet GLOBAL_CONVERTER_SET = new JSONConverterSet();
 	
 	/**
 	 * JavaScript type of a JSONObject.
@@ -109,59 +110,54 @@ public class JSONObject
 	private int length;
 	
 	/**
-	 * Gets a converter for a type.
+	 * Gets a converter for a type for the default converter set.
+	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <E> the class type.
 	 * @param clazz the class to get the converter for.
 	 * @return a converter to use for JSON conversion.
+	 * @see JSONConverterSet#getConverter(Class)
 	 */
-	@SuppressWarnings("unchecked")
 	public static <E> JSONConverter<E> getConverter(Class<E> clazz)
 	{
-		JSONConverter<E> out = null;
-		if ((out = (JSONConverter<E>)REGISTERED_CONVERTERS.get(clazz)) == null)
-		{
-			JSONType jsonType = clazz.getAnnotation(JSONType.class);
-			if (jsonType == null)
-				return null;
-			
-			synchronized (REGISTERED_CONVERTERS)
-			{
-				if ((out = (JSONConverter<E>)REGISTERED_CONVERTERS.get(clazz)) == null)
-				{
-					try {
-						out = (JSONConverter<E>)jsonType.converter().getDeclaredConstructor().newInstance();
-						setConverter(clazz, out);
-					} catch (Throwable e) {
-						throw new RuntimeException(e);
-					}
-				}
-			}
-		}
-		else
-			out = (JSONConverter<E>)REGISTERED_CONVERTERS.get(clazz);
-		
-		return out;
+		return GLOBAL_CONVERTER_SET.getConverter(clazz);
 	}
 	
 	/**
 	 * Sets a converter for a type.
+	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <E> the class type.
 	 * @param clazz the class to get the converter for.
 	 * @param converter the converter to use for JSON conversion.
+	 * @see JSONConverterSet#setConverter(Class, JSONConverter)
 	 */
 	public static <E extends Object> void setConverter(Class<E> clazz, JSONConverter<E> converter)
 	{
-		REGISTERED_CONVERTERS.put(clazz, converter);
+		GLOBAL_CONVERTER_SET.setConverter(clazz, converter);
 	}
-	
+
 	/**
-	 * Creates a new JSON object.
-	 * Objects may have an internal converter.
+	 * Creates a new JSON object using the default converter set.
+	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <T> the object type used for finding a converter.
 	 * @param object the object to encapsulate.
 	 * @return the JSONObject representing the input object.
+	 * @see JSONObject#create(Object, JSONConverterSet)
 	 */
 	public static <T> JSONObject create(T object)
+	{
+		return create(object, GLOBAL_CONVERTER_SET);
+	}
+	
+	/**
+	 * Creates a new JSON object using an associated specific converter set.
+	 * Objects may have an internal converter.
+	 * @param <T> the object type used for finding a converter.
+	 * @param object the object to encapsulate.
+	 * @param converterSet the converter set to use for creating JSONObjects from Java objects.
+	 * @return the JSONObject representing the input object.
+	 * @since [NOW]
+	 */
+	public static <T> JSONObject create(T object, JSONConverterSet converterSet)
 	{
 		if (object == null)
 			return NULL;
@@ -172,7 +168,7 @@ public class JSONObject
 			int len = Array.getLength(object);
 			JSONObject out = createEmptyArray();
 			for (int i = 0; i < len; i++)
-				out.append(JSONObject.create(Array.get(object, i)));
+				out.append(JSONObject.create(Array.get(object, i), converterSet));
 			return out;
 		}
 		else if (object instanceof Boolean)
@@ -182,15 +178,9 @@ public class JSONObject
 		else if (object instanceof String)
 			return new JSONObject(Type.STRING, object, NOT_ARRAY);
 
-		@SuppressWarnings("unchecked")
-		Class<T> clz = (Class<T>)object.getClass();
-		JSONConverter<T> converter = getConverter(clz);
-		if (converter != null)
-			return converter.getJSONObject(object);
-		else
-			return DEFAULT_CONVERTER.getJSONObject(object);
+		return createFromObject(object, converterSet);
 	}
-	
+
 	/**
 	 * Creates a JSONObject that represents an empty object type.
 	 * @return a JSONObject representing a blank object.
@@ -209,6 +199,68 @@ public class JSONObject
 		return new JSONObject(Type.OBJECT, new ArrayList<JSONObject>(3), 0);
 	}
 	
+	/**
+	 * Creates a JSONObject from a Java Object source.
+	 * @param <T> the Java object type.
+	 * @param object the object itself.
+	 * @param converterSet the converter set to use for conversion.
+	 * @return a JSONObject.
+	 * @since [NOW]
+	 */
+	static <T> JSONObject createFromObject(T object, JSONConverterSet converterSet)
+	{
+		@SuppressWarnings("unchecked")
+		Class<T> clz = (Class<T>)object.getClass();
+	
+		JSONConverter<T> converter = converterSet.getConverter(clz);
+		if (converter != null)
+			return converter.getJSONObject(object);
+		
+		else if (object instanceof Enum)
+		{
+			return JSONObject.create(((Enum<?>)object).name(), converterSet);
+		}
+		else if (object instanceof Map<?, ?>)
+		{
+			JSONObject out = JSONObject.createEmptyObject();
+			for (Map.Entry<?, ?> entry : ((Map<?, ?>)object).entrySet())
+			{
+				String key = String.valueOf(entry.getKey());
+				out.addMember(key, converterSet, entry.getValue());
+			}
+			return out;
+		}
+		else if (object instanceof Iterable<?>)
+		{
+			JSONObject out = JSONObject.createEmptyArray();
+			Iterator<?> it = ((Iterable<?>)object).iterator();
+			while (it.hasNext())
+				out.append(JSONObject.create(it.next(), converterSet));
+			return out;
+		}
+		else
+		{
+			JSONObject out = JSONObject.createEmptyObject();
+			Profile<?> profile = JSONObject.PROFILE_FACTORY.getProfile(clz);
+	
+			for (Map.Entry<String, MethodInfo> getters : profile.getGetterMethodsByName().entrySet())
+			{
+				String memberName = getters.getKey();
+				String alias = getters.getValue().getAlias();
+				Method method = getters.getValue().getMethod();
+				out.addMember(Utils.isNull(alias, memberName), converterSet, Utils.invokeBlind(method, object));
+			}
+			for (Map.Entry<String, FieldInfo> fields : profile.getPublicFieldsByName().entrySet())
+			{
+				String memberName = fields.getKey();
+				String alias = fields.getValue().getAlias();
+				Field field = fields.getValue().getField();
+				out.addMember(Utils.isNull(alias, memberName), converterSet, Utils.getFieldValue(object, field));
+			}
+			return out;
+		}
+	}
+
 	/**
 	 * JSON object constructor for generating
 	 * @param type the internal JSON type of this object.
@@ -594,14 +646,7 @@ public class JSONObject
 	 */
 	public boolean removeMember(String name)
 	{
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isObject())
-			throw new IllegalStateException("This is not an Object type.");
+		verifyObjectType();
 		
 		if (isArray())
 			promoteArrayToObject();
@@ -611,7 +656,7 @@ public class JSONObject
 		else
 			return false;
 	}
-	
+
 	/**
 	 * Adds a member to this JSONObject, if this is an Object type.
 	 * If this is not an object, this causes an error.
@@ -627,14 +672,7 @@ public class JSONObject
 		if (Utils.isEmpty(name))
 			throw new IllegalArgumentException("Member name is empty, null, or whitespace.");
 
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isObject())
-			throw new IllegalStateException("This is not an Object type.");
+		verifyObjectType();
 		
 		if (isArray())
 			promoteArrayToObject();
@@ -646,6 +684,7 @@ public class JSONObject
 	 * Adds a member to this JSONObject, if this is an Object type.
 	 * If this is not an object, this causes an error.
 	 * If this is an array type, it is promoted to an object.
+	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * @param name the member name. whitespace is trimmed from this.
 	 * @param object the object value of the member.
 	 * @throws IllegalArgumentException if name is an empty string or just whitespace.
@@ -654,7 +693,24 @@ public class JSONObject
 	 */
 	public void addMember(String name, Object object)
 	{
-		addMember(name, JSONObject.create(object));
+		addMember(name, GLOBAL_CONVERTER_SET, object);
+	}
+	
+	/**
+	 * Adds a member to this JSONObject, if this is an Object type.
+	 * If this is not an object, this causes an error.
+	 * If this is an array type, it is promoted to an object.
+	 * @param name the member name. whitespace is trimmed from this.
+	 * @param converterSet the converter set to use for creating JSONObjects from Java objects.
+	 * @param object the object value of the member.
+	 * @throws IllegalArgumentException if name is an empty string or just whitespace.
+	 * @throws IllegalStateException if this JSONObject is not an Object type 
+	 * ({@link #isObject()} is false) or is null ({@link #isNull()} is true) or is UNDEFINED ({@link #isUndefined()} is true).
+	 * @since [NOW]
+	 */
+	public void addMember(String name, JSONConverterSet converterSet, Object object)
+	{
+		addMember(name, JSONObject.create(object, converterSet));
 	}
 	
 	/**
@@ -666,19 +722,12 @@ public class JSONObject
 	 */
 	public void append(JSONObject object)
 	{
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isArray())
-			throw new IllegalStateException("This is not an array Object type.");
+		verifyArrayType();
 		
 		getList().add(object);
 		length = getList().size();
 	}
-	
+
 	/**
 	 * Removes a member from a specific index in this JSONObject, shifting the contents, 
 	 * but only if this is an array. 
@@ -690,14 +739,7 @@ public class JSONObject
 	 */
 	public JSONObject removeAt(int index)
 	{
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isArray())
-			throw new IllegalStateException("This is not an array Object type.");
+		verifyArrayType();
 		
 		JSONObject out = getList().remove(index);
 		length = getList().size();
@@ -713,14 +755,7 @@ public class JSONObject
 	 */
 	public JSONObject pop()
 	{
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isArray())
-			throw new IllegalStateException("This is not an array Object type.");
+		verifyArrayType();
 		
 		return removeAt(0);
 	}
@@ -735,14 +770,7 @@ public class JSONObject
 	 */
 	public void addAt(int index, JSONObject object)
 	{
-		if (isNull())
-			throw new IllegalStateException("Object is null.");
-		
-		if (isUndefined())
-			throw new IllegalStateException("Object is undefined.");
-		
-		if (!isArray())
-			throw new IllegalStateException("This is not an array Object type.");
+		verifyArrayType();
 		
 		getList().add(index, object);
 		length = getList().size();
@@ -759,9 +787,10 @@ public class JSONObject
 	{
 		addAt(0, object);
 	}
-	
+
 	/**
 	 * Creates a new instance of a class, populated with values from this object. 
+	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * <p>
 	 * This JSON object is applied via the target object's public fields
 	 * and setter methods, if this is an object and the target class is not a primitive
@@ -779,8 +808,34 @@ public class JSONObject
 	 * @throws RuntimeException if the object cannot be created.
 	 * @throws JSONConversionException if an error occurs during conversion/application.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T newObject(Class<T> clazz)
+	{
+		return newObject(clazz, GLOBAL_CONVERTER_SET);
+	}
+	
+	/**
+	 * Creates a new instance of a class, populated with values from this object. 
+	 * <p>
+	 * This JSON object is applied via the target object's public fields
+	 * and setter methods, if this is an object and the target class is not a primitive
+	 * or autoboxed primitive.
+	 * <p>
+	 * For instance, if there is a member on this object called "color", its value
+	 * will be applied via the public field "color" or the setter "setColor()". Public
+	 * fields take precedence over setters.
+	 * <p>
+	 * If the input object is an array, then the contents of the indices are replaced,
+	 * up to the length of the input array or this JSON array, whichever's shorter.
+	 * @param <T> the return type.
+	 * @param clazz the class to instantiate and apply.
+	 * @param converterSet the converter set to use for certain specific object types.
+	 * @return a new instance of this object, or null if this object's value is null (see {@link #isNull()}.
+	 * @throws RuntimeException if the object cannot be created.
+	 * @throws JSONConversionException if an error occurs during conversion/application.
+	 * @since [NOW]
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T newObject(Class<T> clazz, JSONConverterSet converterSet)
 	{
 		if (isNull())
 			return null;
@@ -788,11 +843,11 @@ public class JSONObject
 		if (Utils.isArray(clazz))
 		{
 			Object obj = Array.newInstance(Utils.getArrayType(clazz), length);
-			return applyToObject(clazz.cast(obj));
+			return applyToObject(clazz.cast(obj), converterSet);
 		}
 		
 		if (isObject())
-			return applyToObject(Utils.create(clazz));
+			return applyToObject(Utils.create(clazz), converterSet);
 		
 		if (clazz == Boolean.TYPE)
 			return (T)Boolean.valueOf(getBoolean());
@@ -825,9 +880,10 @@ public class JSONObject
 		
 		return null;
 	}
-	
+
 	/**
 	 * Applies this object to an object bean / plain ol' Java object, or Array.
+	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * <p>
 	 * This JSON object is applied via the target object's public fields
 	 * and setter methods, if an object.
@@ -843,8 +899,32 @@ public class JSONObject
 	 * @return the input object.
 	 * @throws JSONConversionException if an error occurs during conversion/application.
 	 */
-	@SuppressWarnings("unchecked")
 	public <T> T applyToObject(T object)
+	{
+		return applyToObject(object, GLOBAL_CONVERTER_SET);
+	}
+	
+	/**
+	 * Applies this object to an object bean / plain ol' Java object, or Array.
+	 * <p>
+	 * This JSON object is applied via the target object's public fields
+	 * and setter methods, if an object.
+	 * <p>
+	 * For instance, if there is a member on this object called "color", its value
+	 * will be applied via the public field "color" or the setter "setColor()". Public
+	 * fields take precedence over setters.
+	 * <p>
+	 * If the input object is an array, then the contents of the indices are replaced,
+	 * up to the length of the input array or this JSON array, whichever's shorter.
+	 * @param <T> the return type.
+	 * @param object the object to set the fields/indices of.
+	 * @param converterSet the converter set to use for certain specific object types.
+	 * @return the input object.
+	 * @throws JSONConversionException if an error occurs during conversion/application.
+	 * @since [NOW]
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T applyToObject(T object, JSONConverterSet converterSet)
 	{
 		if (Utils.isArray(object))
 		{
@@ -854,7 +934,7 @@ public class JSONObject
 			Class<?> atype = Utils.getArrayType(object);
 			int len = Math.min(length, Array.getLength(object));
 			for (int i = 0; i < len; i++)
-				Array.set(object, i, createForType(String.format("this[%d]", i), get(i), atype, null, null));
+				Array.set(object, i, createForType(String.format("this[%d]", i), get(i), converterSet, atype, null, null));
 			
 			return object;
 		}
@@ -872,7 +952,7 @@ public class JSONObject
 				String alias = fieldInfo.getAlias();
 				JSONObject jsobj = get(Utils.isNull(alias, member));
 				if (!jsobj.isUndefined())
-					Utils.setFieldValue(object, fieldInfo.getField(), createForType(member, jsobj, type, fieldInfo.getKeyClass(), fieldInfo.getValueClass()));
+					Utils.setFieldValue(object, fieldInfo.getField(), createForType(member, jsobj, converterSet, type, fieldInfo.getKeyClass(), fieldInfo.getValueClass()));
 			}
 			else if ((setterInfo = Utils.isNull(profile.getSetterMethodsByAlias().get(member), (profile.getSetterMethodsByName().get(member)))) != null)
 			{
@@ -881,14 +961,38 @@ public class JSONObject
 				Method method = setterInfo.getMethod();
 				JSONObject jsobj = get(Utils.isNull(alias, member));
 				if (!jsobj.isUndefined())
-					Utils.invokeBlind(method, object, createForType(member, jsobj, type, setterInfo.getKeyClass(), setterInfo.getValueClass()));
+					Utils.invokeBlind(method, object, createForType(member, jsobj, converterSet, type, setterInfo.getKeyClass(), setterInfo.getValueClass()));
 			}			
 		}
 		
 		return object;
 	}
 
-	private static <T> T newClassInstance(String memberName, Class<T> type)
+	private void verifyArrayType() 
+	{
+		if (isNull())
+			throw new IllegalStateException("Object is null.");
+		
+		if (isUndefined())
+			throw new IllegalStateException("Object is undefined.");
+		
+		if (!isArray())
+			throw new IllegalStateException("This is not an array Object type.");
+	}
+	
+	private void verifyObjectType()
+	{
+		if (isNull())
+			throw new IllegalStateException("Object is null.");
+		
+		if (isUndefined())
+			throw new IllegalStateException("Object is undefined.");
+		
+		if (!isObject())
+			throw new IllegalStateException("This is not an Object type.");
+	}
+	
+	private static <T> T newClassInstance(String memberName, JSONConverterSet converterSet, Class<T> type)
 	{
 		try {
 			return type.getDeclaredConstructor().newInstance();
@@ -911,7 +1015,7 @@ public class JSONObject
 	
 	// Creates an object for application later.
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static <T, K, V> T createForType(String memberName, JSONObject jsonObject, Class<T> type, Class<K> keyType, Class<V> valueType)
+	private static <T, K, V> T createForType(String memberName, JSONObject jsonObject, JSONConverterSet converterSet, Class<T> type, Class<K> keyType, Class<V> valueType)
 	{
 		if (JSONObject.class.isAssignableFrom(type))
 		{
@@ -919,6 +1023,10 @@ public class JSONObject
 		}
 
 		Type jsonType = jsonObject.getType();
+		
+		JSONConverter<T> converter;
+		if ((converter = converterSet.getConverter(type)) != null)
+			return converter.getObject(jsonObject);
 		
 		switch (jsonType)
 		{
@@ -1000,10 +1108,6 @@ public class JSONObject
 			
 			case OBJECT:
 			{
-				JSONConverter<T> converter = getConverter(type);
-				if (converter != null)
-					return converter.getObject(jsonObject);
-				
 				// Nulls.
 				if (jsonObject.isNull())
 					return null;
@@ -1016,7 +1120,7 @@ public class JSONObject
 					{
 						Collection<K> coll = new ArrayList<K>(jsonObject.length);
 						for (int i = 0; i < jsonObject.length; i++)
-							coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+							coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), converterSet, keyType, null, null));
 						return type.cast(coll);
 					}
 					// Target is Collection.
@@ -1035,14 +1139,14 @@ public class JSONObject
 								coll = new ArrayList<K>(jsonObject.length);
 							
 							for (int i = 0; i < jsonObject.length; i++)
-								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), converterSet, keyType, null, null));
 							out = coll;
 						}
 						else
 						{
-							Collection<K> coll = (Collection<K>)newClassInstance(memberName, type);
+							Collection<K> coll = (Collection<K>)newClassInstance(memberName, converterSet, type);
 							for (int i = 0; i < jsonObject.length; i++)
-								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+								coll.add(createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), converterSet, keyType, null, null));
 							out = coll;
 						}
 						return type.cast(out);
@@ -1052,7 +1156,7 @@ public class JSONObject
 					{
 						Object newarray = Array.newInstance(keyType, jsonObject.length);
 						for (int i = 0; i < jsonObject.length; i++)
-							Array.set(newarray, i, createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), keyType, null, null));
+							Array.set(newarray, i, createForType(String.format("%s[%d]", memberName, i), jsonObject.get(i), converterSet, keyType, null, null));
 						return type.cast(newarray);
 					}
 					else
@@ -1070,19 +1174,19 @@ public class JSONObject
 						Map<K, V> map = new HashMap<K, V>(keys.length);
 						for (String key : keys)
 							map.put(
-								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), keyType, null, null), 
-								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), valueType, null, null)
+								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), converterSet, keyType, null, null), 
+								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), converterSet, valueType, null, null)
 							);
 						out = map;
 					}
 					else
 					{
 						String[] keys = jsonObject.getMemberNames();
-						Map<K, V> map = (Map<K, V>)newClassInstance(memberName, type);
+						Map<K, V> map = (Map<K, V>)newClassInstance(memberName, converterSet, type);
 						for (String key : keys)
 							map.put(
-								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), keyType, null, null), 
-								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), valueType, null, null)
+								createForType(String.format("%s->%s", memberName, key), JSONObject.create(key), converterSet, keyType, null, null), 
+								createForType(String.format("%s[%s]", memberName, key), jsonObject.get(key), converterSet, valueType, null, null)
 							);
 						out = map;
 					}
@@ -1091,7 +1195,7 @@ public class JSONObject
 				// Objects.
 				else
 				{
-					T out = newClassInstance(memberName, type);
+					T out = newClassInstance(memberName, converterSet, type);
 					jsonObject.applyToObject(out);
 					return out;
 				}
