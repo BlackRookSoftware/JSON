@@ -1,6 +1,6 @@
 # Black Rook JSON
 
-Copyright (c) 2019-2020 Black Rook Software.  
+Copyright (c) 2019-2023 Black Rook Software.  
 [https://github.com/BlackRookSoftware/JSON](https://github.com/BlackRookSoftware/JSON)
 
 [Latest Release](https://github.com/BlackRookSoftware/JSON/releases/latest)
