@@ -1,3 +1,4 @@
 com.blackrook.json
 com.blackrook.json.annotation
+com.blackrook.json.converters
 com.blackrook.json.struct

@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.blackrook.json"},{"l":"com.blackrook.json.annotation"},{"l":"com.blackrook.json.struct"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"com.blackrook.json"},{"l":"com.blackrook.json.annotation"},{"l":"com.blackrook.json.converters"},{"l":"com.blackrook.json.struct"}];updateSearchResults();
