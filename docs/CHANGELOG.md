@@ -3,6 +3,12 @@ JSON (C) Black Rook Software
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
+Changed in 1.3.0
+----------------
+
+- `Added` JSONConverterSet and JSON conversion options, allowing the library to separate how it parses JSON from different sources.
+
+
 Changed in 1.2.0
 ----------------
 

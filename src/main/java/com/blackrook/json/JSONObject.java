@@ -111,7 +111,7 @@ public class JSONObject
 	
 	/**
 	 * Gets a converter for a type for the default converter set.
-	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
+	 * Since 1.3.0, It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <E> the class type.
 	 * @param clazz the class to get the converter for.
 	 * @return a converter to use for JSON conversion.
@@ -124,7 +124,7 @@ public class JSONObject
 	
 	/**
 	 * Sets a converter for a type.
-	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
+	 * Since 1.3.0, It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <E> the class type.
 	 * @param clazz the class to get the converter for.
 	 * @param converter the converter to use for JSON conversion.
@@ -137,7 +137,7 @@ public class JSONObject
 
 	/**
 	 * Creates a new JSON object using the default converter set.
-	 * Since [NOW], It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
+	 * Since 1.3.0, It is, however, preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.
 	 * @param <T> the object type used for finding a converter.
 	 * @param object the object to encapsulate.
 	 * @return the JSONObject representing the input object.
@@ -155,7 +155,7 @@ public class JSONObject
 	 * @param object the object to encapsulate.
 	 * @param converterSet the converter set to use for creating JSONObjects from Java objects.
 	 * @return the JSONObject representing the input object.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	public static <T> JSONObject create(T object, JSONConverterSet converterSet)
 	{
@@ -205,7 +205,7 @@ public class JSONObject
 	 * @param object the object itself.
 	 * @param converterSet the converter set to use for conversion.
 	 * @return a JSONObject.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	static <T> JSONObject createFromObject(T object, JSONConverterSet converterSet)
 	{
@@ -684,7 +684,7 @@ public class JSONObject
 	 * Adds a member to this JSONObject, if this is an Object type.
 	 * If this is not an object, this causes an error.
 	 * If this is an array type, it is promoted to an object.
-	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
+	 * Since 1.3.0, it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * @param name the member name. whitespace is trimmed from this.
 	 * @param object the object value of the member.
 	 * @throws IllegalArgumentException if name is an empty string or just whitespace.
@@ -706,7 +706,7 @@ public class JSONObject
 	 * @throws IllegalArgumentException if name is an empty string or just whitespace.
 	 * @throws IllegalStateException if this JSONObject is not an Object type 
 	 * ({@link #isObject()} is false) or is null ({@link #isNull()} is true) or is UNDEFINED ({@link #isUndefined()} is true).
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	public void addMember(String name, JSONConverterSet converterSet, Object object)
 	{
@@ -790,7 +790,7 @@ public class JSONObject
 
 	/**
 	 * Creates a new instance of a class, populated with values from this object. 
-	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
+	 * Since 1.3.0, it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * <p>
 	 * This JSON object is applied via the target object's public fields
 	 * and setter methods, if this is an object and the target class is not a primitive
@@ -832,7 +832,7 @@ public class JSONObject
 	 * @return a new instance of this object, or null if this object's value is null (see {@link #isNull()}.
 	 * @throws RuntimeException if the object cannot be created.
 	 * @throws JSONConversionException if an error occurs during conversion/application.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T newObject(Class<T> clazz, JSONConverterSet converterSet)
@@ -883,7 +883,7 @@ public class JSONObject
 
 	/**
 	 * Applies this object to an object bean / plain ol' Java object, or Array.
-	 * Since [NOW], it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
+	 * Since 1.3.0, it is preferred to use a {@link JSONConverterSet} for specifying how JSON objects get converted.	 
 	 * <p>
 	 * This JSON object is applied via the target object's public fields
 	 * and setter methods, if an object.
@@ -921,7 +921,7 @@ public class JSONObject
 	 * @param converterSet the converter set to use for certain specific object types.
 	 * @return the input object.
 	 * @throws JSONConversionException if an error occurs during conversion/application.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T applyToObject(T object, JSONConverterSet converterSet)

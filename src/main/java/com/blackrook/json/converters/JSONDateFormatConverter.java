@@ -12,7 +12,7 @@ import com.blackrook.json.JSONObject;
 /**
  * A special converter that converts dates from strings to Dates in JSON member data.
  * @author Matthew Tropiano
- * @since [NOW]
+ * @since 1.3.0
  */
 public class JSONDateFormatConverter implements JSONConverter<Date>
 {

@@ -76,7 +76,7 @@ public class JSONReader
 	 * @return the applied object, already converted.
 	 * @throws IOException if the stream can't be read, or a read error occurs.
 	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	public static <T> T readJSON(Class<T> clazz, Reader reader, JSONConverterSet converterSet) throws IOException
 	{
@@ -94,7 +94,7 @@ public class JSONReader
 	 * @return the applied object, already converted.
 	 * @throws IOException if the stream can't be read, or an error occurs.
 	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	public static <T> T readJSON(Class<T> clazz, InputStream in, JSONConverterSet converterSet) throws IOException
 	{
@@ -111,7 +111,7 @@ public class JSONReader
 	 * @return the applied object, already converted.
 	 * @throws IOException if the string can't be read, or a read error occurs.
 	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
-	 * @since [NOW]
+	 * @since 1.3.0
 	 */
 	public static <T> T readJSON(Class<T> clazz, String data, JSONConverterSet converterSet) throws IOException
 	{

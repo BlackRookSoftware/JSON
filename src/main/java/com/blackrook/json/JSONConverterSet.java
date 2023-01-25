@@ -15,7 +15,7 @@ import com.blackrook.json.annotation.JSONType;
  * A set of converters for converting Java object types to JSON types, and back.
  * Used in creating {@link JSONObject}s and reading/writing JSON.
  * @author Matthew Tropiano
- * @since [NOW]
+ * @since 1.3.0
  */
 public class JSONConverterSet
 {

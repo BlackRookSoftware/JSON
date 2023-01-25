@@ -317,7 +317,7 @@ public class JSONWriter
 		/**
 		 * Replaces the underlying converter set.
 		 * @param converterSet the converter set to use.
-		 * @since [NOW]
+		 * @since 1.3.0
 		 */
 		public void setConverterSet(JSONConverterSet converterSet) 
 		{

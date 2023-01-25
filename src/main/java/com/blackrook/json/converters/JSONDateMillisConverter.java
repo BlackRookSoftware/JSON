@@ -8,7 +8,7 @@ import com.blackrook.json.JSONObject;
 /**
  * A special converter that converts dates from milliseconds since Epoch to Dates in JSON member data.
  * @author Matthew Tropiano
- * @since [NOW]
+ * @since 1.3.0
  */
 public class JSONDateMillisConverter implements JSONConverter<Date>
 {
