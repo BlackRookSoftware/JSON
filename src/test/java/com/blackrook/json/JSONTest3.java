@@ -9,26 +9,15 @@ package com.blackrook.json;
 
 import java.util.Date;
 
+import com.blackrook.json.converters.JSONISODateTimeConverter;
+
 public final class JSONTest3
 {
 	public static void main(String[] args) throws Exception
 	{
 		JSONConverterSet set1 = new JSONConverterSet();
 		JSONConverterSet set2 = new JSONConverterSet();
-		set2.setConverter(Date.class, new JSONConverter<Date>() 
-		{
-			@Override
-			public JSONObject getJSONObject(Date object)
-			{
-				return JSONObject.create(object.getTime());
-			} 
-			
-			@Override
-			public Date getObject(JSONObject jsonObject) 
-			{
-				return new Date(jsonObject.getLong());
-			}
-		});
+		set2.setConverter(Date.class, new JSONISODateTimeConverter());
 		
 		JSONWriter.Options options = new JSONWriter.Options();
 		options.setConverterSet(set1);
