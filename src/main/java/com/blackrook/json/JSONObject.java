@@ -624,18 +624,6 @@ public class JSONObject
 	}
 	
 	/**
-	 * Promotes this array to an object.
-	 */
-	private void promoteArrayToObject()
-	{
-		HashMap<String, JSONObject> newmap = new HashMap<String, JSONObject>();
-		for (int i = 0; i < length; i++)
-			newmap.put(String.valueOf(i), get(i));
-		value = newmap;
-		length = NOT_ARRAY;
-	}
-
-	/**
 	 * Removes a member from this JSONObject, if this is an Object type.
 	 * If this is not an object (or array), this causes an error.
 	 * WARNING: Array types are promoted to objects whether or not this succeeds.
@@ -966,6 +954,18 @@ public class JSONObject
 		}
 		
 		return object;
+	}
+
+	/**
+	 * Promotes this array to an object.
+	 */
+	private void promoteArrayToObject()
+	{
+		HashMap<String, JSONObject> newmap = new HashMap<String, JSONObject>();
+		for (int i = 0; i < length; i++)
+			newmap.put(String.valueOf(i), get(i));
+		value = newmap;
+		length = NOT_ARRAY;
 	}
 
 	private void verifyArrayType() 
