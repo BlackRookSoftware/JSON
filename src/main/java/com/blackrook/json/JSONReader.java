@@ -7,6 +7,8 @@
  ******************************************************************************/
 package com.blackrook.json;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,7 +42,7 @@ public class JSONReader
 	}
 
 	/**
-	 * Reads in a new JSONObject from an InputStream.
+	 * Reads in a new JSONObject from an InputStream. This assumes UTF-8 as the stream encoding.
 	 * This does not close the stream after reading, and reads the first structure
 	 * that it finds.
 	 * @param in the input stream to read from.
@@ -50,11 +52,12 @@ public class JSONReader
 	 */
 	public static JSONObject readJSON(InputStream in) throws IOException
 	{
-		return readJSON(new InputStreamReader(in));
+		return readJSON(new InputStreamReader(in, "UTF-8"));
 	}
 
 	/**
 	 * Reads in a new JSONObject from a string of characters.
+	 * This reads only the first structure that it finds.
 	 * @param data the string to read.
 	 * @return the parsed JSONObject.
 	 * @throws IOException if the string can't be read, or a read error occurs.
@@ -65,6 +68,23 @@ public class JSONReader
 		return readJSON(new StringReader(data));
 	}
 
+	/**
+	 * Reads in a new JSONObject from a File. This assumes UTF-8 as the file encoding.
+	 * This reads only the first structure that it finds.
+	 * @param file the file to read.
+	 * @return the parsed JSONObject.
+	 * @throws IOException if the string can't be read, or a read error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since 1.4.0
+	 */
+	public static JSONObject readJSON(File file) throws IOException
+	{
+		try (FileInputStream fis = new FileInputStream(file))
+		{
+			return readJSON(fis);
+		}
+	}
+	
 	/**
 	 * Reads in a new object from a Reader.
 	 * This does not close the stream after reading, and reads the first structure
@@ -87,6 +107,7 @@ public class JSONReader
 	 * Reads in a new object from an InputStream.
 	 * This does not close the stream after reading, and reads the first structure
 	 * that it finds and returns it as a new object converted from the JSON.
+	 * Assumes UTF-8 as the encoding.
 	 * @param converterSet the converter set to use for conversion of certain specific types.
 	 * @param <T> the returned class type.
 	 * @param clazz the class type to read.
@@ -102,8 +123,8 @@ public class JSONReader
 	}
 
 	/**
-	 * Reads in a new object from a string of characters and returns it as a 
-	 * new object converted from the JSON.
+	 * Reads in a new object from a string of characters and returns it as a new object converted from the JSON. 
+	 * This reads the first structure that it finds.
 	 * @param converterSet the converter set to use for conversion of certain specific types.
 	 * @param <T> the returned class type.
 	 * @param clazz the class type to read.
@@ -116,6 +137,24 @@ public class JSONReader
 	public static <T> T readJSON(Class<T> clazz, String data, JSONConverterSet converterSet) throws IOException
 	{
 		return readJSON(data).newObject(clazz, converterSet);
+	}
+
+	/**
+	 * Reads in a new object from a file and returns it as a new object converted from the JSON. 
+	 * This reads the first structure that it finds.
+	 * Assumes UTF-8 as the encoding.
+	 * @param converterSet the converter set to use for conversion of certain specific types.
+	 * @param <T> the returned class type.
+	 * @param clazz the class type to read.
+	 * @param file the file to read.
+	 * @return the applied object, already converted.
+	 * @throws IOException if the string can't be read, or a read error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since 1.4.0
+	 */
+	public static <T> T readJSON(Class<T> clazz, File file, JSONConverterSet converterSet) throws IOException
+	{
+		return readJSON(file).newObject(clazz, converterSet);
 	}
 
 	/**
@@ -151,8 +190,8 @@ public class JSONReader
 	}
 
 	/**
-	 * Reads in a new object from a string of characters and returns it as a 
-	 * new object converted from the JSON.
+	 * Reads in a new object from a string of characters and returns it as a new object converted from the JSON.
+	 * This reads the first structure that it finds.
 	 * @param <T> the returned class type.
 	 * @param clazz the class type to read.
 	 * @param data the string to read.
@@ -163,6 +202,23 @@ public class JSONReader
 	public static <T> T readJSON(Class<T> clazz, String data) throws IOException
 	{
 		return readJSON(data).newObject(clazz);
+	}
+
+	/**
+	 * Reads in a new object from a string of characters and returns it as a new object converted from the JSON.
+	 * This reads the first structure that it finds.
+	 * Assumes UTF-8 as the encoding.
+	 * @param <T> the returned class type.
+	 * @param clazz the class type to read.
+	 * @param file the file to read.
+	 * @return the applied object, already converted.
+	 * @throws IOException if the string can't be read, or a read error occurs.
+	 * @throws JSONConversionException if a parsing error occurs, or the JSON is malformed.
+	 * @since 1.4.0
+	 */
+	public static <T> T readJSON(Class<T> clazz, File file) throws IOException
+	{
+		return readJSON(file).newObject(clazz);
 	}
 
 	private static class JSONLexerKernel extends Lexer.Kernel
@@ -364,18 +420,15 @@ public class JSONReader
 		 */
 		private boolean ArrayBody()
 		{
-			if (currentType(JSONLexerKernel.TYPE_COMMA))
+			while (currentType(JSONLexerKernel.TYPE_COMMA))
 			{
 				nextToken();
 				
-				if (Value())
-				{
-					JSONObject json = currentObject.pop();
-					currentObject.peek().append(json);
-					return ArrayBody();
-				}
-				else
+				if (!Value())
 					return false;
+
+				JSONObject json = currentObject.pop();
+				currentObject.peek().append(json);
 			}
 			
 			return true;
@@ -398,14 +451,12 @@ public class JSONReader
 					return false;
 				}
 				
-				if (Value())
-				{
-					JSONObject json = currentObject.pop();
-					currentObject.peek().addMember(currentMember.pop(), json);
-					return ObjectBody();
-				}
-				else
+				if (!Value())
 					return false;
+				
+				JSONObject json = currentObject.pop();
+				currentObject.peek().addMember(currentMember.pop(), json);
+				return ObjectBody();
 			}
 			
 			return true;
@@ -417,7 +468,7 @@ public class JSONReader
 		 */
 		private boolean ObjectBody()
 		{
-			if (currentType(JSONLexerKernel.TYPE_COMMA))
+			while (currentType(JSONLexerKernel.TYPE_COMMA))
 			{
 				nextToken();
 				
@@ -436,12 +487,11 @@ public class JSONReader
 					return false;
 				}
 				
-				if (Value())
-				{
-					JSONObject json = currentObject.pop();
-					currentObject.peek().addMember(currentMember.pop(), json);
-					return ObjectBody();
-				}
+				if (!Value())
+					return false;
+				
+				JSONObject json = currentObject.pop();
+				currentObject.peek().addMember(currentMember.pop(), json);
 			}
 			
 			return true;

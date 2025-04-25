@@ -387,10 +387,18 @@ public class JSONWriter
 			String endIndent = indentString(options.indentation, indentDepth - 1);
 			
 			writer.append("[");
+
+			final int len = object.length();
+			
+			if (len == 0)
+			{
+				writer.append("]");
+				return;
+			}
+			
 			if (memberIndent != null)
 				writer.append('\n');
 			
-			final int len = object.length();
 			for (int i = 0; i < len; i++)
 			{
 				if (memberIndent != null)

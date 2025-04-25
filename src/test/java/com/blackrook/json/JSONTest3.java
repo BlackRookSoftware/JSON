@@ -7,69 +7,57 @@
  ******************************************************************************/
 package com.blackrook.json;
 
-import java.util.Date;
-
-import com.blackrook.json.converters.JSONISODateTimeConverter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 public final class JSONTest3
 {
 	public static void main(String[] args) throws Exception
 	{
-		JSONConverterSet set1 = new JSONConverterSet();
-		JSONConverterSet set2 = new JSONConverterSet();
-		set2.setConverter(Date.class, new JSONISODateTimeConverter());
-		
+		String json = getTextualContents(ClassLoader.getSystemClassLoader().getResourceAsStream("com/blackrook/json/test3.json"));
 		JSONWriter.Options options = new JSONWriter.Options();
-		options.setConverterSet(set1);
-		JSONWriter.Options options2 = new JSONWriter.Options();
-		options2.setConverterSet(set2);
-
-		Example example = new Example();
+		options.setIndentation("    ");
+		options.setOmittingNullMembers(true);
+		
+		JSONObject out = null;
 		
 		for (int i = 0; i < 5000; i++)
 		{
 			long t = System.nanoTime();
-			String s = JSONWriter.writeJSONString(example, options);
+			out = JSONReader.readJSON(json);
+			t = System.nanoTime() - t;
+			System.out.println(json + (t + "ns"));
+		}
+		for (int i = 0; i < 5000; i++)
+		{
+			long t = System.nanoTime();
+			String s = JSONWriter.writeJSONString(out, options);
 			t = System.nanoTime() - t;
 			System.out.println(s  + (t + "ns"));
 		}		
-
-		String s = null;
-		for (int i = 0; i < 5000; i++)
-		{
-			long t = System.nanoTime();
-			s = JSONWriter.writeJSONString(example, options2);
-			t = System.nanoTime() - t;
-			System.out.println(s  + (t + "ns"));
-		}
-		
-		for (int i = 0; i < 5000; i++)
-		{
-			long t = System.nanoTime();
-			Example e = JSONReader.readJSON(Example.class, s, set2);
-			t = System.nanoTime() - t;
-			System.out.println(e  + (t + "ns"));
-		}
-
 	}
 	
-	public static class Example
+	/**
+	 * Retrieves the textual contents of a stream in the system's current encoding.
+	 * @param in	the input stream to use.
+	 * @return		a contiguous string (including newline characters) of the stream's contents.
+	 * @throws IOException	if the read cannot be done.
+	 */
+	public static String getTextualContents(InputStream in) throws IOException
 	{
-		public Date date;
-		public String x;
+		StringBuilder sb = new StringBuilder();
 		
-		public Example()
+		BufferedReader br = new BufferedReader(new InputStreamReader(in));
+		String line;
+		while ((line = br.readLine()) != null)
 		{
-			this.date = new Date();
-			this.x = "Hello, world!";
+			sb.append(line);
+			sb.append('\n');
 		}
-		
-		@Override
-		public String toString() 
-		{
-			return String.valueOf(date) + ", x:" + x;
-		}
-		
+		br.close();
+		return sb.toString();
 	}
-	
+
 }

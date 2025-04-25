@@ -3,6 +3,15 @@ JSON (C) Black Rook Software
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
+Changed in 1.4.0
+----------------
+
+- `Added` JSONReader.readJSON(File). 
+- `Added` JSONReader.readJSON(Class<T>, File).
+- `Added` JSONReader.readJSON(Class<T>, File, JSONConverterSet).
+- `Changed` JSONReader had some tail recursions removed - should accommodate larger sets of data.
+- `Changed` JSONWriter now skips indenting empty arrays.
+
 Changed in 1.3.0
 ----------------
 
