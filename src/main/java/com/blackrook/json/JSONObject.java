@@ -735,7 +735,7 @@ public class JSONObject
 	}
 	
 	/**
-	 * Removes a member from the beginning index of this JSONObject, shifting the contents, 
+	 * Removes a member from the ending index of this JSONObject, 
 	 * but only if this is an array. 
 	 * @return the JSONObject at index 0 or null if this is empty.
 	 * @see #isArray()
@@ -745,7 +745,7 @@ public class JSONObject
 	{
 		verifyArrayType();
 		
-		return removeAt(0);
+		return removeAt(length() - 1);
 	}
 	
 	/**
@@ -765,7 +765,7 @@ public class JSONObject
 	}
 	
 	/**
-	 * Adds a member to the beginning of this JSONObject, shifting the contents, 
+	 * Adds a member to the end of this JSONObject, 
 	 * but only if this is an array.
 	 * @param object the object to add.
 	 * @see #isArray()
@@ -773,7 +773,7 @@ public class JSONObject
 	 */
 	public void push(JSONObject object)
 	{
-		addAt(0, object);
+		append(object);
 	}
 
 	/**

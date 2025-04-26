@@ -3,6 +3,12 @@ JSON (C) Black Rook Software
 by Matt Tropiano et al. (see AUTHORS.txt)
 
 
+Changed in 1.4.1
+----------------
+
+- `Changed` JSONObject.push(...) and JSONObject.pop(...) should add/remove from the end, not beginning.
+
+
 Changed in 1.4.0
 ----------------
 
