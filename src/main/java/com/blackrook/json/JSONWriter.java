@@ -496,50 +496,50 @@ public class JSONWriter
 		
 		private void writeEscapedString(String s) throws IOException
 		{
-	    	for (int i = 0; i < s.length(); i++)
-	    	{
-	    		char c = s.charAt(i);
-	    		switch (c)
-	    		{
+			for (int i = 0; i < s.length(); i++)
+			{
+				char c = s.charAt(i);
+				switch (c)
+				{
 					case '\0':
 						writer.append("\\0");
 						break;
-	    			case '\b':
-	    				writer.append("\\b");
-	    				break;
-	    			case '\t':
-	    				writer.append("\\t");
-	    				break;
-	    			case '\n':
-	    				writer.append("\\n");
-	    				break;
-	    			case '\f':
-	    				writer.append("\\f");
-	    				break;
-	    			case '\r':
-	    				writer.append("\\r");
-	    				break;
-	    			case '\\':
-	    				writer.append("\\\\");
-	    				break;
-	    			case '"':
-	    				writer.append("\\\"");    					
-	    				break;
-	    			default:
-	    				if (c < 0x0020 || c >= 0x7f)
-	    				{
-	    					writer.append('\\');
-	    					writer.append('u');
-	    					writer.append(HEXALPHABET.charAt((c & 0x0f000) >> 12));
-	    					writer.append(HEXALPHABET.charAt((c & 0x00f00) >> 8));
-	    					writer.append(HEXALPHABET.charAt((c & 0x000f0) >> 4));
-	    					writer.append(HEXALPHABET.charAt(c & 0x0000f));
-	    				}
-	    				else
-	    					writer.append(c);
-	    				break;
-	    		}
-	    	}
+					case '\b':
+						writer.append("\\b");
+						break;
+					case '\t':
+						writer.append("\\t");
+						break;
+					case '\n':
+						writer.append("\\n");
+						break;
+					case '\f':
+						writer.append("\\f");
+						break;
+					case '\r':
+						writer.append("\\r");
+						break;
+					case '\\':
+						writer.append("\\\\");
+						break;
+					case '"':
+						writer.append("\\\"");    					
+						break;
+					default:
+						if (c < 0x0020 || c >= 0x7f)
+						{
+							writer.append('\\');
+							writer.append('u');
+							writer.append(HEXALPHABET.charAt((c & 0x0f000) >> 12));
+							writer.append(HEXALPHABET.charAt((c & 0x00f00) >> 8));
+							writer.append(HEXALPHABET.charAt((c & 0x000f0) >> 4));
+							writer.append(HEXALPHABET.charAt(c & 0x0000f));
+						}
+						else
+							writer.append(c);
+						break;
+				}
+			}
 		}
 
 		private static String indentString(String indentation, int depth) throws IOException
