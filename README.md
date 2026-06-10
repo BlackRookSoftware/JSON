@@ -34,7 +34,6 @@ Contained in this release is a series of classes that perform JSON conversions.
 The javadocs contain basic outlines of each package's contents.
 
 
-
 ### Compiling with Maven
 
 To install/compile this library and make all artifacts with Apache Maven, type:
